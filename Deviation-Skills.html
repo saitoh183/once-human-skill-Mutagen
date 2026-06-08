@@ -14,17 +14,99 @@
         --bg: #252525;
         --panel: #303030;
         --panel-2: #383838;
-        --border: #555;
-        --text: #e8e8e8;
-        --muted: #b8b8b8;
-        --check: #4a6a4a;
-        --check-dot: #8bc34a;
+        --border: #5f5f5f;
+        --text: #f2f2f2;
+        --muted: #c7c7c7;
+        --panel-card-bg: rgba(48, 48, 48, 0.78);
+        --panel-border: #4f4f4f;
+        --control-hover: #3f3f3f;
+        --control-active-bg: rgba(255, 176, 0, 0.17);
+        --input-bg: #3a3a3a;
+        --image-bg: #242424;
+        --deviation-cell-bg: #3a3a3a;
+        --result-card-bg: #303030;
+        --chip-bg: #262626;
+        --empty-border: #646464;
+        --editor-panel-bg: #2b2b2b;
+        --danger-border: #d46a6a;
+        --danger-bg: rgba(212, 106, 106, 0.2);
+        --ok: #a8f0a8;
+        --error: #ffabab;
+        --legend-border: rgba(255, 255, 255, 0.28);
+        --unlisted-skill: #333333;
+        --skill-chip-border: #6a6a6a;
+        --chip-common-inset: rgba(185, 150, 255, 0.24);
+        --chip-searched-inset: rgba(255, 176, 0, 0.32);
+        --check-dot-border: #6a983a;
+        --shop-cat-bg: rgba(190, 190, 190, 0.24);
+        --shop-cat-legend: rgba(190, 190, 190, 0.36);
+        --shop-dino-bg: rgba(255, 140, 102, 0.24);
+        --shop-dino-legend: rgba(255, 140, 102, 0.36);
+        --shop-snow-bg: rgba(102, 178, 255, 0.24);
+        --shop-snow-legend: rgba(102, 178, 255, 0.36);
+        --shop-wish-bg: rgba(255, 204, 102, 0.24);
+        --shop-wish-legend: rgba(255, 204, 102, 0.36);
+        --focus-border: #b5b5b5;
+        --focus-shadow: rgba(181, 181, 181, 0.22);
+        --check: #4f764f;
+        --check-dot: #9ad85a;
         --searched: #ffb000;
-        --searched-bg: rgba(255, 176, 0, 0.28);
-        --common: #ae7dff;
-        --common-bg: rgba(174, 125, 255, 0.22);
-        --skill-highlight: rgba(255, 105, 180, 0.5);
-        --deviation-highlight: rgba(147, 112, 219, 0.5);
+        --searched-bg: #ffd166;
+        --searched-text: #1f1600;
+        --common: #c7adff;
+        --common-bg: #493a67;
+        --skill-highlight: rgba(255, 105, 180, 0.52);
+        --deviation-highlight: rgba(147, 112, 219, 0.52);
+      }
+
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #f6f1e7;
+        --panel: #fffaf0;
+        --panel-2: #f1e6d3;
+        --border: #8a7a63;
+        --text: #1f2933;
+        --muted: #475569;
+        --panel-card-bg: rgba(255, 250, 240, 0.96);
+        --panel-border: #b8aa94;
+        --control-hover: #efe3cf;
+        --control-active-bg: #fff0bd;
+        --input-bg: #fffdf8;
+        --image-bg: #eee4d3;
+        --deviation-cell-bg: #efe3cf;
+        --result-card-bg: #fffdf8;
+        --chip-bg: #f4eadb;
+        --empty-border: #9a8b75;
+        --editor-panel-bg: #fff7ea;
+        --danger-border: #a53e3e;
+        --danger-bg: #ffe1df;
+        --ok: #146c2e;
+        --error: #9f1d1d;
+        --legend-border: rgba(31, 41, 51, 0.35);
+        --unlisted-skill: #e5dccd;
+        --skill-chip-border: #857762;
+        --chip-common-inset: rgba(93, 58, 176, 0.2);
+        --chip-searched-inset: rgba(138, 86, 0, 0.22);
+        --check-dot-border: #1f5f23;
+        --shop-cat-bg: #e5e1d8;
+        --shop-cat-legend: #d2ccc0;
+        --shop-dino-bg: #ffd9ca;
+        --shop-dino-legend: #ffb99f;
+        --shop-snow-bg: #d7ebff;
+        --shop-snow-legend: #acd4ff;
+        --shop-wish-bg: #fff0bf;
+        --shop-wish-legend: #ffe08a;
+        --focus-border: #5f4b32;
+        --focus-shadow: rgba(95, 75, 50, 0.22);
+        --check: #cfe7c8;
+        --check-dot: #2f7d32;
+        --searched: #8a5600;
+        --searched-bg: #fff0b8;
+        --searched-text: #3d2600;
+        --common: #5d3ab0;
+        --common-bg: #eadfff;
+        --skill-highlight: rgba(196, 35, 107, 0.34);
+        --deviation-highlight: rgba(93, 58, 176, 0.28);
       }
 
       * {
@@ -45,10 +127,28 @@
       }
 
       h1 {
-        margin: 0 0 16px;
+        margin: 0;
         text-align: center;
         font-size: 24px;
         font-weight: 700;
+      }
+
+      .app-header {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .app-header h1 {
+        grid-column: 2;
+      }
+
+      .theme-toggle {
+        grid-column: 3;
+        justify-self: end;
+        min-width: 128px;
       }
 
       .tabs {
@@ -79,13 +179,13 @@
       .tab-button:hover,
       .control-button:hover,
       .toggle-pill input + span:hover {
-        background: #3d3d3d;
+        background: var(--control-hover);
       }
 
       .tab-button.active,
       .toggle-pill input:checked + span {
         border-color: var(--searched);
-        background: rgba(255, 176, 0, 0.16);
+        background: var(--control-active-bg);
       }
 
       .tab-panel {
@@ -97,8 +197,8 @@
       }
 
       .panel-card {
-        background: rgba(48, 48, 48, 0.72);
-        border: 1px solid #444;
+        background: var(--panel-card-bg);
+        border: 1px solid var(--panel-border);
         border-radius: 14px;
         padding: 16px;
       }
@@ -113,7 +213,7 @@
         width: 100%;
         padding: 10px 12px;
         font-size: 14px;
-        background: #3a3a3a;
+        background: var(--input-bg);
         border: 1px solid var(--border);
         color: var(--text);
         border-radius: 8px;
@@ -121,10 +221,11 @@
       }
 
       input[type='search']:focus,
-      select:focus {
+      select:focus,
+      .editor-input:focus {
         outline: none;
-        border-color: #888;
-        box-shadow: 0 0 0 2px rgba(136, 136, 136, 0.2);
+        border-color: var(--focus-border);
+        box-shadow: 0 0 0 2px var(--focus-shadow);
       }
 
       table {
@@ -170,7 +271,7 @@
         font-weight: 700;
         padding: 8px;
         font-size: 14px;
-        background-color: #3a3a3a;
+        background-color: var(--deviation-cell-bg);
       }
 
       td.deviation {
@@ -188,7 +289,7 @@
         height: 34px;
         object-fit: contain;
         border-radius: 6px;
-        background: #242424;
+        background: var(--image-bg);
       }
 
       .check {
@@ -202,32 +303,32 @@
         height: 16px;
         border-radius: 50%;
         background-color: var(--check-dot);
-        border: 1px solid #6a983a;
+        border: 1px solid var(--check-dot-border);
       }
 
       .cat-skill {
-        background-color: rgba(170, 170, 170, 0.2);
+        background-color: var(--shop-cat-bg);
       }
       .dino-skill {
-        background-color: rgba(255, 140, 102, 0.2);
+        background-color: var(--shop-dino-bg);
       }
       .snow-skill {
-        background-color: rgba(102, 178, 255, 0.2);
+        background-color: var(--shop-snow-bg);
       }
       .wish-skill {
-        background-color: rgba(255, 204, 102, 0.2);
+        background-color: var(--shop-wish-bg);
       }
       .multi-skill {
         background: linear-gradient(
           45deg,
-          rgba(170, 170, 170, 0.2),
-          rgba(255, 140, 102, 0.2),
-          rgba(102, 178, 255, 0.2),
-          rgba(255, 204, 102, 0.2)
+          var(--shop-cat-bg),
+          var(--shop-dino-bg),
+          var(--shop-snow-bg),
+          var(--shop-wish-bg)
         );
       }
       .unlisted-skill {
-        background-color: #333;
+        background-color: var(--unlisted-skill);
       }
 
       .skill-highlight {
@@ -256,16 +357,16 @@
         border-radius: 4px;
       }
       .cat-legend {
-        background: rgba(170, 170, 170, 0.3);
+        background: var(--shop-cat-legend);
       }
       .dino-legend {
-        background: rgba(255, 140, 102, 0.3);
+        background: var(--shop-dino-legend);
       }
       .snow-legend {
-        background: rgba(102, 178, 255, 0.3);
+        background: var(--shop-snow-legend);
       }
       .wish-legend {
-        background: rgba(255, 204, 102, 0.3);
+        background: var(--shop-wish-legend);
       }
 
       .search-hidden {
@@ -343,7 +444,7 @@
         width: 14px;
         height: 14px;
         border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
+        border: 1px solid var(--legend-border);
       }
 
       .legend-swatch.searched {
@@ -374,9 +475,9 @@
 
       .result-card {
         min-width: 0;
-        border: 1px solid #4a4a4a;
+        border: 1px solid var(--panel-border);
         border-radius: 14px;
-        background: #303030;
+        background: var(--result-card-bg);
         padding: 12px;
       }
 
@@ -392,8 +493,8 @@
         height: 58px;
         object-fit: contain;
         border-radius: 10px;
-        background: #242424;
-        border: 1px solid #444;
+        background: var(--image-bg);
+        border: 1px solid var(--panel-border);
       }
 
       .result-header h2 {
@@ -408,10 +509,10 @@
       }
 
       .skill-chip {
-        border: 1px solid #555;
+        border: 1px solid var(--skill-chip-border);
         border-radius: 999px;
         padding: 5px 9px;
-        background: #262626;
+        background: var(--chip-bg);
         font-size: 12px;
         line-height: 1.1;
       }
@@ -419,19 +520,19 @@
       .skill-chip.common {
         border-color: var(--common);
         background: var(--common-bg);
-        box-shadow: inset 0 0 0 1px rgba(174, 125, 255, 0.18);
+        box-shadow: inset 0 0 0 1px var(--chip-common-inset);
       }
 
       .skill-chip.searched {
         border-color: var(--searched);
         background: var(--searched-bg);
-        color: #ffe3a4;
+        color: var(--searched-text);
         font-weight: 800;
-        box-shadow: inset 0 0 0 1px rgba(255, 176, 0, 0.28);
+        box-shadow: inset 0 0 0 1px var(--chip-searched-inset);
       }
 
       .empty-state {
-        border: 1px dashed #5a5a5a;
+        border: 1px dashed var(--empty-border);
         border-radius: 12px;
         padding: 24px;
         text-align: center;
@@ -447,9 +548,9 @@
 
       .editor-sidebar,
       .editor-main {
-        border: 1px solid #454545;
+        border: 1px solid var(--panel-border);
         border-radius: 12px;
-        background: #2b2b2b;
+        background: var(--editor-panel-bg);
         padding: 14px;
       }
 
@@ -466,8 +567,8 @@
       }
 
       .danger-button {
-        border-color: #a44;
-        background: rgba(170, 68, 68, 0.18);
+        border-color: var(--danger-border);
+        background: var(--danger-bg);
       }
 
       .editor-status {
@@ -478,11 +579,11 @@
       }
 
       .editor-status.ok {
-        color: #9ddf9d;
+        color: var(--ok);
       }
 
       .editor-status.error {
-        color: #ff9b9b;
+        color: var(--error);
       }
 
       .editor-main h2,
@@ -497,7 +598,7 @@
         padding: 9px 10px;
         border-radius: 8px;
         border: 1px solid var(--border);
-        background: #3a3a3a;
+        background: var(--input-bg);
         color: var(--text);
         font-family: inherit;
       }
@@ -522,9 +623,9 @@
         max-height: 420px;
         overflow: auto;
         padding: 8px;
-        border: 1px solid #444;
+        border: 1px solid var(--panel-border);
         border-radius: 10px;
-        background: #252525;
+        background: var(--bg);
       }
 
       .skill-check {
@@ -533,7 +634,7 @@
         gap: 8px;
         padding: 7px 8px;
         border-radius: 8px;
-        background: #303030;
+        background: var(--result-card-bg);
         font-size: 13px;
       }
 
@@ -553,6 +654,16 @@
       }
 
       @media (max-width: 860px) {
+        .app-header {
+          grid-template-columns: 1fr;
+        }
+
+        .app-header h1,
+        .theme-toggle {
+          grid-column: 1;
+          justify-self: center;
+        }
+
         .search-tools,
         .editor-grid {
           grid-template-columns: 1fr;
@@ -567,7 +678,10 @@
   </head>
   <body>
     <main class="page-shell">
-      <h1>Once Human Skill Mutagen</h1>
+      <header class="app-header">
+        <h1>Once Human Skill Mutagen</h1>
+        <button class="control-button theme-toggle" type="button" id="themeToggle" aria-pressed="false">Light mode</button>
+      </header>
 
       <nav class="tabs" aria-label="Views">
         <button class="tab-button active" type="button" data-tab="matrix-panel">Current Table</button>
@@ -765,6 +879,26 @@
         } else {
           element.classList.add('unlisted-skill');
         }
+      }
+
+      function initTheme() {
+        const button = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('skillMutagenTheme');
+        const systemPrefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
+        const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
+
+        function applyTheme(theme) {
+          const isLight = theme === 'light';
+          document.documentElement.dataset.theme = theme;
+          button.textContent = isLight ? 'Dark mode' : 'Light mode';
+          button.setAttribute('aria-pressed', String(isLight));
+          localStorage.setItem('skillMutagenTheme', theme);
+        }
+
+        applyTheme(initialTheme);
+        button.addEventListener('click', () => {
+          applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+        });
       }
 
       function initTabs() {
@@ -1209,6 +1343,7 @@
       }
 
       async function initApp() {
+        initTheme();
         initTabs();
         await loadHostedDatabase();
         buildMatrix();
