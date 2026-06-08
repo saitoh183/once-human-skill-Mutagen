@@ -408,7 +408,7 @@
         overflow-y: auto;
         border: 1px solid var(--panel-border);
         border-radius: 12px;
-        background: var(--panel-bg);
+        background: var(--panel);
         box-shadow: 0 16px 36px rgba(0, 0, 0, 0.36);
         padding: 6px;
       }
@@ -527,6 +527,11 @@
         border-color: var(--common);
       }
 
+      .legend-swatch.dynamic {
+        background: var(--legend-bg-dyn, var(--common-bg));
+        border-color: var(--legend-border-dyn, var(--common));
+      }
+
       .results-grid {
         display: grid;
         gap: 12px;
@@ -602,9 +607,11 @@
         line-height: 1.1;
       }
 
-      .skill-chip.common {
-        border-color: var(--common);
-        background: var(--common-bg);
+      .skill-chip.result-common {
+        border-color: var(--common-border-dyn, var(--common));
+        background: var(--common-bg-dyn, var(--common-bg));
+        color: var(--common-text-dyn, var(--text));
+        font-weight: 700;
         box-shadow: inset 0 0 0 1px var(--chip-common-inset);
       }
 
@@ -861,10 +868,7 @@
 
           <div class="result-meta">
             <div id="resultCount">Enter a search term.</div>
-            <div class="legend-inline">
-              <span class="legend-chip"><span class="legend-swatch searched"></span>Searched skill</span>
-              <span class="legend-chip"><span class="legend-swatch common"></span>Common to all results</span>
-            </div>
+            <div class="legend-inline" id="skillLegend"></div>
           </div>
 
           <div id="results" class="results-grid vertical"></div>
@@ -947,6 +951,8 @@
       let editKey = localStorage.getItem('skillMutagenEditKey') || '';
       let editorLocked = true;
       let selectedGlobalSkill = '';
+      let activeSkillColumnIndex = null;
+      let activeDeviationName = '';
 
       function rebuildIndexes() {
         deviations = database.deviations;
@@ -1065,6 +1071,8 @@
       }
 
       function clearAllHighlights() {
+        activeSkillColumnIndex = null;
+        activeDeviationName = '';
         document.querySelectorAll('#skillMatrix tbody tr').forEach((row) => {
           row.classList.remove('deviation-highlight');
         });
@@ -1077,7 +1085,12 @@
       }
 
       function highlightSkillColumn(index, header) {
+        if (activeSkillColumnIndex === index) {
+          clearAllHighlights();
+          return;
+        }
         clearAllHighlights();
+        activeSkillColumnIndex = index;
         document.querySelectorAll(`#skillMatrix tbody tr td:nth-child(${index + 2})`).forEach((cell) => {
           cell.classList.add('skill-highlight');
           if (cell.querySelector('.circle')) {
@@ -1088,7 +1101,12 @@
       }
 
       function highlightDeviation(row, deviation) {
+        if (activeDeviationName === deviation.name) {
+          clearAllHighlights();
+          return;
+        }
         clearAllHighlights();
+        activeDeviationName = deviation.name;
         row.classList.add('deviation-highlight');
         const theadRow = document.querySelector('#skillMatrix thead tr');
         const deviationSkillSet = new Set(deviation.skills.map(normalize));
@@ -1212,8 +1230,7 @@
         const mode = document.querySelector('input[name="searchMode"]:checked').value;
         const searchTerm = searchBox.value.trim();
         const items = getSearchSuggestionItems()
-          .filter((item) => !searchTerm || hasText(item.label, searchTerm))
-          .slice(0, 10);
+          .filter((item) => !searchTerm || hasText(item.label, searchTerm));
 
         searchBox.placeholder = mode === 'deviation' ? 'Type a deviation...' : 'Type a skill...';
         if (items.length === 0) {
@@ -1257,12 +1274,16 @@
       function initResultSearch() {
         const searchBox = document.getElementById('resultSearchBox');
         const suggestions = document.getElementById('searchSuggestions');
-        const inputs = document.querySelectorAll('input[name="searchMode"], input[name="layoutMode"]');
+        const searchModeInputs = document.querySelectorAll('input[name="searchMode"]');
+        const layoutModeInputs = document.querySelectorAll('input[name="layoutMode"]');
 
-        inputs.forEach((input) => input.addEventListener('change', () => {
+        searchModeInputs.forEach((input) => input.addEventListener('change', () => {
+          searchBox.value = '';
           updateSearchSuggestions();
+          closeSearchSuggestions();
           renderResults();
         }));
+        layoutModeInputs.forEach((input) => input.addEventListener('change', renderResults));
         searchBox.addEventListener('input', () => {
           updateSearchSuggestions();
           renderResults();
@@ -1307,18 +1328,74 @@
         renderResults();
       }
 
-      function getCommonSkills(results) {
-        if (results.length === 0) return new Set();
-        const [first, ...rest] = results.map((deviation) => new Set(deviation.skills.map(normalize)));
-        for (const skill of [...first]) {
-          if (!rest.every((set) => set.has(skill))) first.delete(skill);
-        }
-        return first;
-      }
-
       function getSearchedSkillSet(term) {
         if (!term) return new Set();
-        return new Set(fullSkillList.filter((skill) => hasText(skill, term)).map(normalize));
+        const normalizedTerm = normalize(term);
+        return new Set(fullSkillList
+          .filter((skill) => normalize(skill) === normalizedTerm)
+          .map(normalize));
+      }
+
+      function getRepeatedSkillCounts(results, searchedSkills) {
+        const counts = new Map();
+        const labels = new Map();
+        results.forEach((deviation) => {
+          const seenInDeviation = new Set();
+          deviation.skills.forEach((skill) => {
+            const normalized = normalize(skill);
+            if (searchedSkills.has(normalized) || seenInDeviation.has(normalized)) return;
+            seenInDeviation.add(normalized);
+            counts.set(normalized, (counts.get(normalized) || 0) + 1);
+            if (!labels.has(normalized)) labels.set(normalized, skill);
+          });
+        });
+        return [...counts.entries()]
+          .filter(([, count]) => count > 1)
+          .map(([normalized, count]) => ({ normalized, label: labels.get(normalized), count }))
+          .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+      }
+
+      function getGeneratedColor(index, total) {
+        const palette = [
+          '#ff7ab6', '#66d9ef', '#a6e22e', '#fd971f', '#ae81ff', '#f92672',
+          '#8be9fd', '#50fa7b', '#ffb86c', '#bd93f9', '#ff79c6', '#f1fa8c'
+        ];
+        if (index < palette.length) return palette[index];
+        const hue = Math.round((index * 137.508) % 360);
+        return `hsl(${hue} 78% 68%)`;
+      }
+
+      function buildRepeatedSkillStyles(repeatedSkills) {
+        const styles = new Map();
+        repeatedSkills.forEach((skill, index) => {
+          const color = getGeneratedColor(index, repeatedSkills.length);
+          styles.set(skill.normalized, {
+            background: color,
+            border: color,
+            text: '#151515'
+          });
+        });
+        return styles;
+      }
+
+      function renderSkillLegend(mode, searchedSkills, repeatedSkills, repeatedStyles) {
+        const legend = document.getElementById('skillLegend');
+        if (mode !== 'skill') {
+          legend.hidden = true;
+          legend.innerHTML = '';
+          return;
+        }
+
+        const searchedLegend = searchedSkills.size > 0
+          ? '<span class="legend-chip"><span class="legend-swatch searched"></span>Searched skill</span>'
+          : '';
+        const repeatedLegend = repeatedSkills.map((skill) => {
+          const style = repeatedStyles.get(skill.normalized);
+          return `<span class="legend-chip"><span class="legend-swatch dynamic" style="--legend-bg-dyn: ${style.background}; --legend-border-dyn: ${style.border};"></span>${escapeHtml(skill.label)} (${skill.count})</span>`;
+        }).join('');
+
+        legend.innerHTML = `${searchedLegend}${repeatedLegend}`;
+        legend.hidden = !legend.innerHTML;
       }
 
       function renderResults() {
@@ -1329,9 +1406,9 @@
         const countElement = document.getElementById('resultCount');
 
         resultsElement.className = `results-grid ${layout} mode-${mode}`;
-        document.querySelector('.legend-inline').hidden = mode !== 'skill';
 
         if (!searchTerm) {
+          renderSkillLegend(mode, new Set(), [], new Map());
           countElement.textContent = 'Enter a search term.';
           resultsElement.innerHTML = '<div class="empty-state">Search a deviation to see its skills, or search a skill to see every compatible deviation.</div>';
           return;
@@ -1344,31 +1421,37 @@
           return deviation.skills.some((skill) => hasText(skill, searchTerm));
         });
 
-        const commonSkills = getCommonSkills(matched);
         const searchedSkills = mode === 'skill' ? getSearchedSkillSet(searchTerm) : new Set();
+        const repeatedSkills = mode === 'skill' ? getRepeatedSkillCounts(matched, searchedSkills) : [];
+        const repeatedStyles = buildRepeatedSkillStyles(repeatedSkills);
+        renderSkillLegend(mode, searchedSkills, repeatedSkills, repeatedStyles);
 
         countElement.textContent = `${matched.length} result${matched.length === 1 ? '' : 's'} for ${mode}: “${searchTerm}”`;
 
         if (matched.length === 0) {
+          renderSkillLegend(mode, searchedSkills, [], new Map());
           resultsElement.innerHTML = '<div class="empty-state">No matching deviations. Either it does not exist here yet, or the spelling is being very Once Human about it.</div>';
           return;
         }
 
         resultsElement.innerHTML = matched
-          .map((deviation) => renderResultCard(deviation, commonSkills, searchedSkills, mode))
+          .map((deviation) => renderResultCard(deviation, repeatedStyles, searchedSkills, mode))
           .join('');
       }
 
-      function renderResultCard(deviation, commonSkills, searchedSkills, mode) {
+      function renderResultCard(deviation, repeatedStyles, searchedSkills, mode) {
         const skillItems = deviation.skills
           .map((skill) => {
             const normalized = normalize(skill);
             const isSearched = searchedSkills.has(normalized);
-            const isCommon = commonSkills.has(normalized);
+            const repeatedStyle = repeatedStyles.get(normalized);
             const classes = ['skill-chip'];
-            if (isCommon) classes.push('common');
+            const style = repeatedStyle && !isSearched
+              ? ` style="--common-bg-dyn: ${repeatedStyle.background}; --common-border-dyn: ${repeatedStyle.border}; --common-text-dyn: ${repeatedStyle.text};"`
+              : '';
+            if (repeatedStyle && !isSearched) classes.push('result-common');
             if (isSearched) classes.push('searched');
-            return `<span class="${classes.join(' ')}">${escapeHtml(skill)}</span>`;
+            return `<span class="${classes.join(' ')}"${style}>${escapeHtml(skill)}</span>`;
           })
           .join('');
 
