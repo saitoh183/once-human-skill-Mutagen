@@ -134,6 +134,26 @@
         padding: 20px 0 36px;
       }
 
+      .app-footer {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .app-footer a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .app-footer a:hover {
+        color: var(--text);
+        text-decoration: underline;
+      }
+
       h1 {
         margin: 0;
         text-align: center;
@@ -921,6 +941,12 @@
           </div>
         </div>
       </section>
+
+      <footer class="app-footer">
+        <span>Unofficial Once Human fan tool.</span>
+        <a href="/terms/">Terms</a>
+        <a href="/policy/">Privacy Policy</a>
+      </footer>
     </main>
 
     <script src="data/deviation-database.js"></script>
