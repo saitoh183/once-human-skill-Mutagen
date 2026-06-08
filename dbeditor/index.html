@@ -209,63 +209,10 @@
       color: var(--error);
     }
 
-    .lock-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      z-index: 20;
-    }
-
-    .lock-card {
-      width: min(420px, calc(100vw - 32px));
-      border: 1px solid var(--panel-border);
-      border-radius: 14px;
-      background: var(--panel);
-      padding: 18px;
-    }
-
-    .lock-card p {
-      margin: 0 0 12px;
-      color: var(--muted);
-    }
-
-    .lock-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .lock-row input {
-      flex: 1;
-      border: 1px solid var(--input-border);
-      border-radius: 10px;
-      background: var(--input-bg);
-      color: var(--text);
-      padding: 9px 10px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
   </style>
 </head>
 <body>
-  <div class="lock-overlay" id="authGate">
-    <div class="lock-card">
-      <h1>Database Editor</h1>
-      <p>This page is restricted. Enter the admin key to continue.</p>
-      <div class="lock-row">
-        <input id="authAdminKey" type="password" placeholder="Admin key" />
-        <button class="control-button" id="authButton" type="button">Unlock</button>
-      </div>
-      <div id="authStatus" class="status-box muted"></div>
-    </div>
-  </div>
-
-  <div class="page-wrap hidden" id="appShell">
+  <div class="page-wrap" id="appShell">
     <div class="app-header">
       <div>
         <h1>Skill Mutagen Database Editor</h1>
@@ -617,17 +564,6 @@
       }
     }
 
-    async function adminAuth(adminKey) {
-      const response = await fetch('/api/edit-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-        body: JSON.stringify({ action: 'generate', label: 'auth-check' })
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
-      return payload;
-    }
-
     function initEditor() {
       document.getElementById('editorDeviationSelect').addEventListener('change', () => {
         renderSelectedDeviationEditor();
@@ -654,38 +590,10 @@
     }
 
     async function initApp() {
-      const gate = document.getElementById('authGate');
-      const shell = document.getElementById('appShell');
-      const adminInput = document.getElementById('authAdminKey');
-      const statusEl = document.getElementById('authStatus');
-
       initTheme();
       initEditor();
-
-      async function authorize() {
-        const adminKey = adminInput.value.trim();
-        if (!adminKey) {
-          statusEl.textContent = 'Enter the admin key.';
-          return;
-        }
-        statusEl.textContent = 'Authorizing...';
-        try {
-          await adminAuth(adminKey);
-          localStorage.setItem('skillMutagenAdminKey', adminKey);
-          gate.classList.add('hidden');
-          shell.classList.remove('hidden');
-          await loadHostedDatabase();
-          populateEditor();
-        } catch (error) {
-          statusEl.textContent = `Authorization failed: ${error.message}`;
-        }
-      }
-
-      adminInput.value = localStorage.getItem('skillMutagenAdminKey') || '';
-      document.getElementById('authButton').addEventListener('click', authorize);
-      adminInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') authorize();
-      });
+      await loadHostedDatabase();
+      populateEditor();
     }
 
     initApp();
