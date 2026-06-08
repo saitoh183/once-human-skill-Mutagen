@@ -17,6 +17,8 @@
     a { color: #d5b3ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .lock-overlay { position: fixed; inset: 0; background: #252525; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 20; }
+    .lock-overlay[hidden] { display: none; }
+    main[hidden] { display: none; }
     .lock-card { width: min(420px, calc(100vw - 32px)); border: 1px solid #555; border-radius: 14px; background: #2f2f2f; padding: 18px; }
     .lock-row { display: flex; gap: 8px; }
     .lock-row input { flex: 1; }
@@ -89,7 +91,7 @@
     return result;
   }
 
-  async function loadKeys() {
+  async function loadKeys(options = {}) {
     try {
       const result = await api('GET');
       keysBody.innerHTML = result.keys.length ? result.keys.map(key => `
@@ -101,8 +103,11 @@
           <td><button data-id="${escapeHtml(key.id)}">Revoke</button></td>
         </tr>`).join('') : '<tr><td colspan="5">No keys yet.</td></tr>';
       statusEl.textContent = `Loaded ${result.keys.length} key(s).`;
+      return result;
     } catch (error) {
       statusEl.textContent = `Load failed: ${error.message}`;
+      if (options.throwOnError) throw error;
+      return null;
     }
   }
 
@@ -142,7 +147,8 @@
     localStorage.setItem('skillMutagenAdminKey', key);
     authStatus.textContent = 'Authorizing...';
     try {
-      await loadKeys();
+      await loadKeys({ throwOnError: true });
+      authStatus.textContent = '';
       authGate.hidden = true;
       mainApp.hidden = false;
     } catch (error) {
