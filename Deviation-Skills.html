@@ -530,30 +530,11 @@
         gap: 6px;
       }
 
-      .legend-filter {
-        border: 1px solid transparent;
-        border-radius: 999px;
-        background: transparent;
+      .legend-chip {
         color: var(--text);
-        font: inherit;
-        padding: 4px 8px;
-        cursor: pointer;
       }
 
-      .legend-filter:hover,
-      .legend-filter:focus {
-        outline: none;
-        border-color: var(--focus-border);
-        background: var(--control-hover);
-      }
-
-      .legend-filter.active {
-        border-color: var(--searched);
-        background: var(--control-active-bg);
-        font-weight: 700;
-      }
-
-      .legend-filter-clear {
+      .legend-chip.searched-skill {
         color: var(--muted);
       }
 
@@ -959,7 +940,6 @@
       let shops = database.shops;
       let allSkills = [];
       let fullSkillList = [];
-      let activeLegendFilter = '';
       let activeSkillColumnIndex = null;
       let activeDeviationName = '';
 
@@ -1259,7 +1239,6 @@
 
       function selectSearchSuggestion(value) {
         const searchBox = document.getElementById('resultSearchBox');
-        activeLegendFilter = '';
         searchBox.value = value;
         closeSearchSuggestions();
         renderResults();
@@ -1269,7 +1248,6 @@
         const searchBox = document.getElementById('resultSearchBox');
         const skillMode = document.querySelector('input[name="searchMode"][value="skill"]');
         if (skillMode) skillMode.checked = true;
-        activeLegendFilter = '';
         searchBox.value = skill;
         updateSearchSuggestions();
         closeSearchSuggestions();
@@ -1303,7 +1281,6 @@
         const layoutModeInputs = document.querySelectorAll('input[name="layoutMode"]');
 
         searchModeInputs.forEach((input) => input.addEventListener('change', () => {
-          activeLegendFilter = '';
           searchBox.value = '';
           updateSearchSuggestions();
           closeSearchSuggestions();
@@ -1311,7 +1288,6 @@
         }));
         layoutModeInputs.forEach((input) => input.addEventListener('change', renderResults));
         searchBox.addEventListener('input', () => {
-          activeLegendFilter = '';
           updateSearchSuggestions();
           renderResults();
         });
@@ -1330,10 +1306,6 @@
         suggestions.addEventListener('click', (event) => {
           const item = event.target.closest('.suggestion-item');
           if (item) selectSearchSuggestion(item.dataset.value);
-        });
-        document.getElementById('skillLegend').addEventListener('click', (event) => {
-          const filter = event.target.closest('.legend-filter');
-          if (filter) toggleLegendFilter(filter.dataset.filter || '');
         });
         document.getElementById('results').addEventListener('click', handleSkillJump);
         document.getElementById('results').addEventListener('keydown', handleSkillJump);
@@ -1411,34 +1383,20 @@
         return styles;
       }
 
-      function deviationHasNormalizedSkill(deviation, normalizedSkill) {
-        return deviation.skills.some((skill) => normalize(skill) === normalizedSkill);
-      }
-
-      function toggleLegendFilter(normalizedSkill) {
-        activeLegendFilter = activeLegendFilter === normalizedSkill ? '' : normalizedSkill;
-        renderResults();
-      }
-
       function renderSkillLegend(mode, searchedSkills, repeatedSkills, repeatedStyles) {
         const legend = document.getElementById('skillLegend');
         if (mode !== 'skill') {
-          activeLegendFilter = '';
           legend.hidden = true;
           legend.innerHTML = '';
           return;
         }
 
-        const hasActiveFilter = activeLegendFilter && repeatedSkills.some((skill) => skill.normalized === activeLegendFilter);
-        if (activeLegendFilter && !hasActiveFilter) activeLegendFilter = '';
-
         const searchedLegend = searchedSkills.size > 0
-          ? '<button class="legend-chip legend-filter legend-filter-clear" type="button" data-filter=""><span class="legend-swatch searched"></span>Searched skill</button>'
+          ? '<span class="legend-chip searched-skill"><span class="legend-swatch searched"></span>Searched skill</span>'
           : '';
         const repeatedLegend = repeatedSkills.map((skill) => {
           const style = repeatedStyles.get(skill.normalized);
-          const active = skill.normalized === activeLegendFilter ? ' active' : '';
-          return `<button class="legend-chip legend-filter${active}" type="button" data-filter="${escapeHtml(skill.normalized)}" aria-pressed="${skill.normalized === activeLegendFilter}"><span class="legend-swatch dynamic" style="--legend-bg-dyn: ${style.background}; --legend-border-dyn: ${style.border};"></span>${escapeHtml(skill.label)} (${skill.count})</button>`;
+          return `<span class="legend-chip"><span class="legend-swatch dynamic" style="--legend-bg-dyn: ${style.background}; --legend-border-dyn: ${style.border};"></span>${escapeHtml(skill.label)} (${skill.count})</span>`;
         }).join('');
 
         legend.innerHTML = `${searchedLegend}${repeatedLegend}`;
@@ -1472,12 +1430,9 @@
         const repeatedSkills = mode === 'skill' ? getRepeatedSkillCounts(baseMatched, searchedSkills) : [];
         const repeatedStyles = buildRepeatedSkillStyles(repeatedSkills);
         renderSkillLegend(mode, searchedSkills, repeatedSkills, repeatedStyles);
-        const activeFilterLabel = repeatedSkills.find((skill) => skill.normalized === activeLegendFilter)?.label || '';
-        const matched = activeLegendFilter
-          ? baseMatched.filter((deviation) => deviationHasNormalizedSkill(deviation, activeLegendFilter))
-          : baseMatched;
+        const matched = baseMatched;
 
-        countElement.textContent = `${matched.length} result${matched.length === 1 ? '' : 's'} for ${mode}: “${searchTerm}”${activeFilterLabel ? ` + ${activeFilterLabel}` : ''}`;
+        countElement.textContent = `${matched.length} result${matched.length === 1 ? '' : 's'} for ${mode}: “${searchTerm}”`;
 
         if (matched.length === 0) {
           renderSkillLegend(mode, searchedSkills, [], new Map());
