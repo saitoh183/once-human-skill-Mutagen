@@ -650,6 +650,19 @@
         box-shadow: inset 0 0 0 1px var(--chip-searched-inset);
       }
 
+      .skill-chip.skill-jump {
+        cursor: pointer;
+        transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+      }
+
+      .skill-chip.skill-jump:hover,
+      .skill-chip.skill-jump:focus-visible {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
       .empty-state {
         border: 1px dashed var(--empty-border);
         border-radius: 12px;
@@ -1289,6 +1302,26 @@
         renderResults();
       }
 
+      function selectSkillSearch(skill) {
+        const searchBox = document.getElementById('resultSearchBox');
+        const skillMode = document.querySelector('input[name="searchMode"][value="skill"]');
+        if (skillMode) skillMode.checked = true;
+        activeLegendFilter = '';
+        searchBox.value = skill;
+        updateSearchSuggestions();
+        closeSearchSuggestions();
+        renderResults();
+        searchBox.focus();
+      }
+
+      function handleSkillJump(event) {
+        const chip = event.target.closest('.skill-jump');
+        if (!chip) return;
+        if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        selectSkillSearch(chip.dataset.skill || chip.textContent.trim());
+      }
+
       function moveSearchSuggestion(direction) {
         const suggestions = document.getElementById('searchSuggestions');
         const items = [...suggestions.querySelectorAll('.suggestion-item')];
@@ -1339,6 +1372,8 @@
           const filter = event.target.closest('.legend-filter');
           if (filter) toggleLegendFilter(filter.dataset.filter || '');
         });
+        document.getElementById('results').addEventListener('click', handleSkillJump);
+        document.getElementById('results').addEventListener('keydown', handleSkillJump);
         suggestions.addEventListener('keydown', (event) => {
           if (event.key === 'Enter') {
             event.preventDefault();
@@ -1504,7 +1539,11 @@
               : '';
             if (repeatedStyle && !isSearched) classes.push('result-common');
             if (isSearched) classes.push('searched');
-            return `<span class="${classes.join(' ')}"${style}>${escapeHtml(skill)}</span>`;
+            const jumpAttributes = mode === 'deviation'
+              ? ` role="button" tabindex="0" data-skill="${escapeHtml(skill)}" aria-label="Search skill ${escapeHtml(skill)}"`
+              : '';
+            if (mode === 'deviation') classes.push('skill-jump');
+            return `<span class="${classes.join(' ')}"${style}${jumpAttributes}>${escapeHtml(skill)}</span>`;
           })
           .join('');
 
