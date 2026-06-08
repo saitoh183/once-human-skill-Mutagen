@@ -14,10 +14,32 @@
     th, td { border: 1px solid #555; padding: 8px; text-align: left; }
     .status { margin: 12px 0; color: #b8b8b8; }
     .new-key { background: rgba(255, 176, 0, .16); border: 1px solid #ffb000; padding: 12px; border-radius: 10px; margin: 12px 0; }
+    a { color: #d5b3ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .lock-overlay { position: fixed; inset: 0; background: #252525; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 20; }
+    .lock-card { width: min(420px, calc(100vw - 32px)); border: 1px solid #555; border-radius: 14px; background: #2f2f2f; padding: 18px; }
+    .lock-row { display: flex; gap: 8px; }
+    .lock-row input { flex: 1; }
   </style>
 </head>
 <body>
-  <main>
+  <div class="row" style="margin-bottom:12px;">
+    <a href="/" style="margin-right:8px;">Back to app</a>
+  </div>
+
+  <div class="lock-overlay" id="authGate">
+    <div class="lock-card">
+      <h1 style="margin:0 0 8px;">Skill Mutagen Edit Keys</h1>
+      <p style="margin:0 0 12px; color:#b8b8b8;">Enter the admin key to manage edit keys.</p>
+      <div class="lock-row">
+        <input id="authAdminKey" type="password" placeholder="Admin key" />
+        <button id="authButton">Unlock</button>
+      </div>
+      <div id="authStatus" class="status"></div>
+    </div>
+  </div>
+
+  <main id="mainApp" hidden>
     <h1>Skill Mutagen Edit Keys</h1>
     <p>Generate and revoke database edit keys. Generated keys are shown once. Store them somewhere less cursed than a Discord screenshot.</p>
     <div class="row">
@@ -40,7 +62,13 @@
   const keysBody = document.getElementById('keysBody');
   const newKeyEl = document.getElementById('newKey');
   const adminInput = document.getElementById('adminKey');
-  adminInput.value = localStorage.getItem('skillMutagenAdminKey') || '';
+  const mainApp = document.getElementById('mainApp');
+  const authGate = document.getElementById('authGate');
+  const authInput = document.getElementById('authAdminKey');
+  const authStatus = document.getElementById('authStatus');
+  const storedAdminKey = localStorage.getItem('skillMutagenAdminKey') || '';
+  adminInput.value = storedAdminKey;
+  authInput.value = storedAdminKey;
 
   function adminKey() {
     const value = adminInput.value.trim();
@@ -49,9 +77,11 @@
   }
 
   async function api(method, body) {
+    const key = adminKey();
+    if (!key) throw new Error('Enter admin key first.');
     const response = await fetch('/api/edit-keys', {
       method,
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey() },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': key },
       body: body ? JSON.stringify(body) : undefined
     });
     const result = await response.json();
@@ -102,8 +132,32 @@
     return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
+  async function authorize() {
+    const key = authInput.value.trim();
+    if (!key) {
+      authStatus.textContent = 'Enter the admin key.';
+      return;
+    }
+    adminInput.value = key;
+    localStorage.setItem('skillMutagenAdminKey', key);
+    authStatus.textContent = 'Authorizing...';
+    try {
+      await loadKeys();
+      authGate.hidden = true;
+      mainApp.hidden = false;
+    } catch (error) {
+      authStatus.textContent = `Authorization failed: ${error.message}`;
+    }
+  }
+
   document.getElementById('loadButton').addEventListener('click', loadKeys);
   document.getElementById('generateButton').addEventListener('click', generateKey);
+  document.getElementById('authButton').addEventListener('click', authorize);
+  authInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') authorize();
+  });
+
+  if (storedAdminKey) authorize();
 </script>
 </body>
 </html>
