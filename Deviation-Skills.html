@@ -1,41 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Skill Mutagen by Deviation & Shop</title>
-    <!-- Add Quicksand Google Font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        color-scheme: dark;
+        --bg: #252525;
+        --panel: #303030;
+        --panel-2: #383838;
+        --border: #555;
+        --text: #e8e8e8;
+        --muted: #b8b8b8;
+        --check: #4a6a4a;
+        --check-dot: #8bc34a;
+        --searched: #ffb000;
+        --searched-bg: rgba(255, 176, 0, 0.28);
+        --common: #ae7dff;
+        --common-bg: rgba(174, 125, 255, 0.22);
+        --skill-highlight: rgba(255, 105, 180, 0.5);
+        --deviation-highlight: rgba(147, 112, 219, 0.5);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        background-color: #2c2c2c;
-        color: #e0e0e0;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
         font-family: 'Quicksand', Arial, sans-serif;
+      }
+
+      .page-shell {
+        width: min(1600px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 20px 0 36px;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .tab-button,
+      .control-button,
+      .toggle-pill input + span {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      }
+
+      .tab-button {
+        padding: 10px 18px;
+        font-weight: 700;
+      }
+
+      .tab-button:hover,
+      .control-button:hover,
+      .toggle-pill input + span:hover {
+        background: #3d3d3d;
+      }
+
+      .tab-button.active,
+      .toggle-pill input:checked + span {
+        border-color: var(--searched);
+        background: rgba(255, 176, 0, 0.16);
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.active {
+        display: block;
+      }
+
+      .panel-card {
+        background: rgba(48, 48, 48, 0.72);
+        border: 1px solid #444;
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .matrix-search-container {
+        margin: 0 auto 16px;
+        max-width: 640px;
+        text-align: center;
+      }
+
+      input[type='search'] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: #3a3a3a;
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        font-family: inherit;
+      }
+
+      input[type='search']:focus,
+      select:focus {
+        outline: none;
+        border-color: #888;
+        box-shadow: 0 0 0 2px rgba(136, 136, 136, 0.2);
       }
 
       table {
         border-collapse: collapse;
         font-family: 'Quicksand', Arial, sans-serif;
         font-size: 12px;
-        margin: 20px auto;
-        border: 1px solid #555;
+        margin: 0 auto;
+        border: 1px solid var(--border);
       }
+
       th,
       td {
-        border: 1px solid #555;
+        border: 1px solid var(--border);
         text-align: center;
         padding: 4px;
         vertical-align: middle;
       }
+
       th.skill-header {
         height: 200px;
         width: 24px;
         vertical-align: bottom;
         position: relative;
         padding: 0;
+        cursor: pointer;
       }
+
       .rotated {
         writing-mode: vertical-lr;
         transform: rotate(180deg);
@@ -46,48 +162,49 @@
         text-align: center;
         font-size: 11px;
       }
-      th.deviation {
-        width: 140px;
+
+      th.deviation,
+      td.deviation {
+        width: 170px;
         text-align: left;
-        font-weight: bold;
+        font-weight: 700;
         padding: 8px;
         font-size: 14px;
         background-color: #3a3a3a;
       }
+
+      td.deviation {
+        cursor: pointer;
+      }
+
+      .matrix-dev-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .matrix-dev-cell img {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #242424;
+      }
+
       .check {
-        background-color: #4a6a4a;
+        background-color: var(--check);
         position: relative;
       }
+
       .circle {
         display: inline-block;
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background-color: #8bc34a;
+        background-color: var(--check-dot);
         border: 1px solid #6a983a;
-        box-sizing: border-box;
-      }
-      .shop-label {
-        font-size: 14px;
-        line-height: 1.3;
-        text-align: center;
-        padding: 4px 0;
-        font-weight: bold;
-      }
-      .cat {
-        color: #aaa;
-      }
-      .dino {
-        color: #ff8c66;
-      }
-      .snow {
-        color: #66b2ff;
-      }
-      .wish {
-        color: #ffcc66;
       }
 
-      /* Shop-specific skill header colors */
       .cat-skill {
         background-color: rgba(170, 170, 170, 0.2);
       }
@@ -100,8 +217,6 @@
       .wish-skill {
         background-color: rgba(255, 204, 102, 0.2);
       }
-
-      /* Multi-shop skills get gradient */
       .multi-skill {
         background: linear-gradient(
           45deg,
@@ -111,44 +226,17 @@
           rgba(255, 204, 102, 0.2)
         );
       }
-
-      /* Unlisted skills = dark background */
       .unlisted-skill {
         background-color: #333;
       }
 
-      /* Highlight styles - updated to pink and purple with 50% transparency */
       .skill-highlight {
-        background-color: rgba(
-          255,
-          105,
-          180,
-          0.5
-        ) !important; /* Pink with 50% opacity */
+        background-color: var(--skill-highlight) !important;
       }
       .deviation-highlight {
-        background-color: rgba(
-          147,
-          112,
-          219,
-          0.5
-        ) !important; /* Purple with 50% opacity */
-      }
-      .overlap-highlight {
-        background-color: #3a4d3a !important;
+        background-color: var(--deviation-highlight) !important;
       }
 
-      /* Top header styling */
-      .top-header {
-        font-size: 14px;
-        font-weight: bold;
-        padding: 8px;
-        text-align: left;
-        border-bottom: 1px solid #555;
-        background-color: #3a3a3a;
-      }
-
-      /* Shop legend styling for A1 cell */
       .shop-legend {
         display: flex;
         flex-direction: column;
@@ -157,19 +245,16 @@
         padding: 8px 0;
         font-size: 12px;
       }
-
       .legend-item {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-
       .legend-color {
         width: 16px;
         height: 16px;
         border-radius: 4px;
       }
-
       .cat-legend {
         background: rgba(170, 170, 170, 0.3);
       }
@@ -183,861 +268,557 @@
         background: rgba(255, 204, 102, 0.3);
       }
 
-      /* Search-related styles */
       .search-hidden {
         opacity: 0.2;
         transition: opacity 0.2s ease-out;
       }
-
       .search-visible {
         opacity: 1;
         transition: opacity 0.2s ease-out;
       }
 
-      #searchBox:focus {
-        outline: none;
-        border-color: #888;
-        box-shadow: 0 0 0 2px rgba(136, 136, 136, 0.2);
+      .search-tools {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 16px;
+      }
+
+      .field label,
+      .toggle-group-label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .toggle-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .toggle-pill input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .toggle-pill input + span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 8px 12px;
+        user-select: none;
+      }
+
+      .result-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .legend-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      .legend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+      }
+
+      .legend-swatch.searched {
+        background: var(--searched-bg);
+        border-color: var(--searched);
+      }
+
+      .legend-swatch.common {
+        background: var(--common-bg);
+        border-color: var(--common);
+      }
+
+      .results-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .results-grid.vertical {
+        grid-template-columns: 1fr;
+      }
+
+      .results-grid.horizontal {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(280px, 360px);
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+
+      .result-card {
+        min-width: 0;
+        border: 1px solid #4a4a4a;
+        border-radius: 14px;
+        background: #303030;
+        padding: 12px;
+      }
+
+      .result-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .result-header img {
+        width: 58px;
+        height: 58px;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #242424;
+        border: 1px solid #444;
+      }
+
+      .result-header h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .skill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .skill-chip {
+        border: 1px solid #555;
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: #262626;
+        font-size: 12px;
+        line-height: 1.1;
+      }
+
+      .skill-chip.common {
+        border-color: var(--common);
+        background: var(--common-bg);
+        box-shadow: inset 0 0 0 1px rgba(174, 125, 255, 0.18);
+      }
+
+      .skill-chip.searched {
+        border-color: var(--searched);
+        background: var(--searched-bg);
+        color: #ffe3a4;
+        font-weight: 800;
+        box-shadow: inset 0 0 0 1px rgba(255, 176, 0, 0.28);
+      }
+
+      .empty-state {
+        border: 1px dashed #5a5a5a;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      @media (max-width: 860px) {
+        .search-tools {
+          grid-template-columns: 1fr;
+        }
+
+        .result-meta {
+          align-items: flex-start;
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
-    <div style="margin: 20px 0">
-      <!-- Removed: Data Compiled by u/Setarius of Reddit -->
-      <div
-        class="search-container"
-        style="margin: 20px auto; max-width: 600px; text-align: center"
-      >
-        <input
-          type="text"
-          id="searchBox"
-          placeholder="Search skills or deviations..."
-          style="
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 14px;
-            background: #3a3a3a;
-            border: 1px solid #555;
-            color: #e0e0e0;
-            border-radius: 4px;
-            font-family: 'Quicksand', Arial, sans-serif;
-          "
-        />
-        <!-- Removed: Type to filter and instructions -->
-      </div>
-    </div>
+    <main class="page-shell">
+      <h1>Once Human Skill Mutagen</h1>
 
-    <table>
-      <thead>
-        <tr>
-          <th class="deviation">
-            <div class="shop-legend">
-              <div class="legend-item">
-                <div class="legend-color cat-legend"></div>
-                <span>Cat Shop</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color dino-legend"></div>
-                <span>Dino Shop</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color snow-legend"></div>
-                <span>Snow Shop</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color wish-legend"></div>
-                <span>Wish Shop</span>
+      <nav class="tabs" aria-label="Views">
+        <button class="tab-button active" type="button" data-tab="matrix-panel">Current Table</button>
+        <button class="tab-button" type="button" data-tab="search-panel">Deviation / Skill Search</button>
+      </nav>
+
+      <section id="matrix-panel" class="tab-panel active">
+        <div class="matrix-search-container">
+          <input
+            type="search"
+            id="matrixSearchBox"
+            placeholder="Filter current table by skills or deviations..."
+            autocomplete="off"
+          />
+        </div>
+
+        <div style="overflow-x: auto">
+          <table id="skillMatrix">
+            <thead>
+              <tr>
+                <th class="deviation">
+                  <div class="shop-legend">
+                    <div class="legend-item"><div class="legend-color cat-legend"></div><span>Cat Shop</span></div>
+                    <div class="legend-item"><div class="legend-color dino-legend"></div><span>Dino Shop</span></div>
+                    <div class="legend-item"><div class="legend-color snow-legend"></div><span>Snow Shop</span></div>
+                    <div class="legend-item"><div class="legend-color wish-legend"></div><span>Wish Shop</span></div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="search-panel" class="tab-panel">
+        <div class="panel-card">
+          <div class="search-tools">
+            <div class="field">
+              <label for="resultSearchBox">Search</label>
+              <input
+                type="search"
+                id="resultSearchBox"
+                list="searchSuggestions"
+                placeholder="Type a deviation or skill..."
+                autocomplete="off"
+              />
+              <datalist id="searchSuggestions"></datalist>
+            </div>
+
+            <div>
+              <div class="toggle-group-label">Search by</div>
+              <div class="toggle-group" role="radiogroup" aria-label="Search mode">
+                <label class="toggle-pill"><input type="radio" name="searchMode" value="deviation" checked /><span>Deviation</span></label>
+                <label class="toggle-pill"><input type="radio" name="searchMode" value="skill" /><span>Skill</span></label>
               </div>
             </div>
-          </th>
-          <!-- Skill headers will be inserted here -->
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Rows will be inserted here -->
-      </tbody>
-    </table>
 
+            <div>
+              <div class="toggle-group-label">Layout</div>
+              <div class="toggle-group" role="radiogroup" aria-label="Result layout">
+                <label class="toggle-pill"><input type="radio" name="layoutMode" value="vertical" checked /><span>Vertical</span></label>
+                <label class="toggle-pill"><input type="radio" name="layoutMode" value="horizontal" /><span>Horizontal</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-meta">
+            <div id="resultCount">Enter a search term.</div>
+            <div class="legend-inline">
+              <span class="legend-chip"><span class="legend-swatch searched"></span>Searched skill</span>
+              <span class="legend-chip"><span class="legend-swatch common"></span>Common to all results</span>
+            </div>
+          </div>
+
+          <div id="results" class="results-grid vertical"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="data/deviation-database.js"></script>
     <script>
-      // ✅ STEP 1: DEFINE DEVIATIONS FIRST (BEFORE USING THEM)
-      const deviations = {
-        'Atomic Lighter': [
-          'Flame Bullet',
-          'Rite of Strength',
-          'Elemental Overload',
-          'Energy Conduit',
-          'Speed Up',
-          'Group Elemental Overload',
-          'Flame Impact',
-          'Incendiary Bullet',
-        ],
-        'Atomic Snail': [
-          'Cryo Bullet',
-          'Energy Conduit',
-          'Deviant Energy Conduit',
-          'Elemental Overload',
-          'Lightning Pierce',
-          'Crystal Ambush',
-        ],
-        'Butterfly Emmissary': ['Savage Strike', 'Dodge', 'Resonant Skybound'],
-        'Buzzy Bee': [
-          'Psi Bullet',
-          'Rapid Charge',
-          'Healing Bullet',
-          'Healing Aura',
-          'Cyclone',
-        ],
-        'By-the-Wind': [
-          'Psi Bullet',
-          'Psi Ray',
-          'Group Physical Enhancement',
-          'Cyclone',
-          'Heavy Pressure',
-          'Penetrating Charge',
-        ],
-        'Chaos Extradimensional Cat': [
-          'Charging Aura',
-          'Sweep',
-          'Kitty Punch',
-          'Rapid Charge',
-          'Heavy Pressure',
-          'Charge',
-        ],
-        'Chaos Pyro Dino': [
-          'Flaming Flight',
-          'Burn Aura',
-          'Speed Up',
-          'Flame Jet',
-          'Incendiary Bullet',
-          'Meteor',
-        ],
-        'Chaos Snows Sprite': [
-          'Elemental Overload',
-          'Cryo Bullet',
-          'Ice Crystal Barrage',
-          'Frost Satellite',
-          'Speed Up',
-          'Ice Crystal Ambush',
-        ],
-        'Chaos Mr Wish': [
-          'Space Twister',
-          'Weakspot Sniper',
-          'Resonant Skybound',
-          'Rapid Fire',
-          'Fate Coin',
-          'Self-Recharge',
-        ],
-        'Digby Boy': [
-          'Savage Strike',
-          'Provoke',
-          'Chrysalis',
-          'Heavy Pressure',
-          'Charge',
-          'Shield',
-        ],
-        'Disco Ball': [
-          'Psi Bullet',
-          'Resonant Skybound',
-          'Energy Conduit',
-          'Weakspot Sniper',
-          'Healing Link',
-          'Healing Bullet',
-        ],
-        'Dr-Teddy': [
-          'Savage Strike',
-          'Rapid Charge',
-          'Healing',
-          'Healing Bullet',
-          'Charge',
-          'Healing Aura',
-        ],
-        Dreamcatcher: [
-          'Cyclone',
-          'Dodge',
-          'Rapid Charge',
-          'Resonant Skybound',
-          'Mesh Traction',
-          'Space Twister',
-        ],
-        'Electric Eel': [
-          'Electric Bullet',
-          'Lightning',
-          'Rapid Charge',
-          'Lightning Pierce',
-          'Elemental Overload',
-          'Electrical Blast',
-        ],
-        'Enchanting Void': [
-          'Dodge',
-          'Space Twister',
-          'Resist Death',
-          'Psi Bullet',
-          'Intimidation',
-        ],
-        'Festering Gel': [
-          'Psi Bullet',
-          'Healing Bullet',
-          'Healing Aura',
-          'Chrysalis',
-          'Heavy Pressure',
-        ],
-        'Fetch-lot-Bunny': [
-          'Savage Strike',
-          'Provoke',
-          'Healing',
-          'Rush',
-          'Resist Death',
-          'Charge',
-          'Chrysalis',
-        ],
-        'Flame Essence': [
-          'Flame Bullet',
-          'Burn Aura',
-          'Self-Recharge',
-          'Dodge',
-          'Flame Impact',
-          'Incendiary Bullet',
-        ],
-        'Frog the Leaper': [
-          'Savage Strike',
-          'Provoke',
-          'Chrysalis',
-          'Charge',
-          'Whirlwind Slash',
-          'Heavy Pressure',
-        ],
-        Gazocchio: [
-          'Psi Bullet',
-          'Physical Enhancement',
-          'Physical Shockwave',
-          'Psi Ray',
-        ],
-        'Gingerbread House': [
-          'Psi Bullet',
-          'Rapid Charge',
-          'Dodge',
-          'Chrysalis',
-          'Cyclone',
-          "Black Cat's Gaze",
-          'Corrosion Aura',
-        ],
-        Growthshroom: [
-          'Savage Strike',
-          'Provoke',
-          'Chrysalis',
-          'Shield',
-          'Whirlwind Slash',
-          'Heavy Pressure',
-          'Resist Death',
-        ],
-        'Grumpy Bulb': [
-          'Psi Bullet',
-          'Rush',
-          'Space Twister',
-          'Charge',
-          'Wild Shot',
-          'Resist Death',
-          'Chrysalis',
-        ],
-        Hydronaut: [
-          'Electric Bullet',
-          'Electrical Blast',
-          'Lightning Pierce',
-          'Self-Recharge',
-          'Lucky Light',
-          'Frost Vortex',
-          'Elemental Overload',
-        ],
-        H37: [
-          'Psi Bullet',
-          'Psi Ray',
-          'Shield',
-          'Chrysalis',
-          'Charge',
-          'Emergency Shield',
-        ],
-        'Ice Pot': [
-          'Cryo Bullet',
-          'Provoke',
-          'Resist Death',
-          'Ice Crystal Ambush',
-          'Damage Link',
-          'Self-Healing',
-        ],
-        'Invincible Sun': [
-          'Meteor',
-          'Flame Bullet',
-          'Elemental Overload',
-          'Charging Aura',
-          'Flame Impact',
-        ],
-        'Lethal Rabbit': [
-          'Savage Strike',
-          'Blink',
-          'Blade Declaration',
-          'Sweep',
-          'Speed Up',
-          'Blink Strike',
-        ],
-        'Logging Beaver': [
-          'Savage Strike',
-          'Chrysalis',
-          'Sweep',
-          'Penetrating Charge',
-          'Blink Strike',
-          'Beaver Combo',
-        ],
-        'Lonewolf Whisper': [
-          'Savage Strike',
-          'Blink Strike',
-          'Physical Enhancement',
-          'Speed Up',
-          'Penetrating Charge',
-          'Sweep',
-        ],
-        'Masonic Pyramid': [
-          'Electric Bullet',
-          'Speed Up',
-          'Lightning',
-          'Sugarcoated Shell',
-          'Torpedo',
-          'Pulse Orb',
-          'Group Elemental Overload',
-          'Electrical Blast',
-        ],
-        'Mini Feaster': [
-          'Psi Bullet',
-          'Outer God’s Tentacle',
-          'Space Twister',
-          'Speed Up',
-          'Healing',
-          'Physical Enhancement',
-        ],
-        'Mini Wonder': [
-          'Lightning',
-          'Pulse Orb',
-          'Elemental Overload',
-          'Blackhole Jet',
-          'Space Twister',
-        ],
-        'Mr Wish': [
-          'Space Twister',
-          'Weakspot Sniper',
-          'Resonant Skybound',
-          'Rapid Fire',
-          'Fate Coin',
-          'Self-Recharge',
-        ],
-        Nutcracker: [
-          'Rapid Fire',
-          'Wild Shot',
-          'Chrysalis',
-          'Resist Death',
-          'Speed Up',
-          'Weakspot Sniper',
-        ],
-        'Orb Lightning': [
-          'Electric Bullet',
-          'Lightning',
-          'Pulse Orb',
-          'Electrical Blast',
-          'Resonant Skybound',
-        ],
-        'Paper Doll': [
-          'Flame Bullet',
-          'Crystal Ambush',
-          'Pulse Orb',
-          'Lightning',
-          'Cryo Bullet',
-          'Flame Impact',
-          'Physical Shockwave',
-        ],
-        'Party Monkey': [
-          'Cyclone',
-          'Flame Bullet',
-          'Provoke',
-          'Flame Twister',
-          'Speed Up',
-          'Rapid Charge',
-        ],
-        'Polar Jelly': [
-          'Cryo Bullet',
-          'Frost Satellite',
-          'Crystal Ambush',
-          'Group Elemental Overload',
-          'Emergency Shield',
-          'Frost Vortex',
-        ],
-        'Pup Buddy': [
-          'Savage Strike',
-          'Rite of Strength',
-          'Super Flammable',
-          'Charge',
-          'Whirlwind Slash',
-          'Explosive',
-        ],
-        'Pyro Dino': [
-          'Flaming Flight',
-          'Burn Aura',
-          'Speed Up',
-          'Flame Jet',
-          'Incendiary Bullet',
-          'Meteor',
-        ],
-        Rainman: ['Cryo Bullet', 'Chrysalis', 'Resist Death', 'Rainy Peril'],
-        Rebecca: [
-          'Healing Bullet',
-          'Energy Conduit',
-          'Charging Aura',
-          'Group Elemental Overload',
-          'Group Physical Enhancement',
-          'Agni’s Emissary',
-        ],
-        'Shattered Maiden': [
-          'Psi Bullet',
-          'Psi Ray',
-          'Rapid Charge',
-          'Rite of Strength',
-          'Resist Death',
-          'Mesh Traction',
-        ],
-        'Snow Globe': [
-          'Cryo Bullet',
-          'Frost Satellite',
-          'Rapid Charge',
-          'Ice Crystal Ambush',
-          'Lightning Pierce',
-          'Elemental Overload',
-        ],
-        'Space Turner': [
-          'Psi Bullet',
-          'Energy Conduit',
-          'Resonant Skybound',
-          'Mesh Traction',
-          'Psi Ray',
-          'Space Twister',
-        ],
-        'Strange Door': [
-          'Chrysalis',
-          'Pulse Ray',
-          'Provoke',
-          'Pulse Orb',
-          'Void Zone',
-          'Lightning Pierce',
-        ],
-        'Voodoo Doll': [
-          'Psi Bullet',
-          'Mesh Traction',
-          'Speed Up',
-          'Resist Death',
-          'Corrosion Aura',
-        ],
-        'Zeno Purifier': [
-          'Blink',
-          'Cyclone',
-          'Dodge',
-          'Sweep',
-          'Whirlwind Slash',
-          'Shadow Strike',
-        ],
-        Zapmander: [
-          'Electric Bullet',
-          'Lightning',
-          'Pulse Orb',
-          'Electrical Blast',
-          'Elemental Overload',
-          'Chain Lightning',
-        ],
-        Whalepup: [
-          'Cryo Bullet',
-          'Shield',
-          'Frost Vortex',
-          'Resist Death',
-          'Ice Crystal Ambush',
-          'Whale Invasion',
-        ],
-        'Director Fox': [
-          'Psi Bullet',
-          'Healing Bullet',
-          'Healing Aura',
-          'Healing Link',
-          'Group Physical Enhancement',
-          'Animal Expert',
-        ],
-        'Soul Summoner': [
-          'Cryo Bullet',
-          'Elemental Overload',
-          'Frost Vortex',
-          'Rain Arrow',
-          'Dodge',
-          'Arrow Storm',
-        ],
-        'Tar Pudding': [
-          'Flame Bullet',
-          'Elemental Overload',
-          'Incendiary Bullet',
-          'Burn Aura',
-          'Meteor',
-          'Crude Oil Spill',
-        ],
-        'Hug-in-a-Bowl': [
-          'Psi Bullet',
-          'Chrysalis',
-          'Heavy Pressure',
-          'Resonant Skybound',
-          'Rush',
-          'Self-Recharge',
-        ],
-        'Upper World Spawn': [
-          'Flame Bullet',
-          'Meteor',
-          'Pulse Ray',
-          'Burn Aura',
-          'Provoke',
-          'Upper World Protection',
-        ],
-      };
+      'use strict';
 
-      // Define shops and their skills (from your earlier lists)
-      const shops = {
-        cat: [
-          'Savage Strike',
-          'Psi Bullet',
-          'Electric Bullet',
-          'Chrysalis',
-          'Physical Enhancement',
-          'Shield',
-          'Sweep',
-          'Rush',
-          'Heavy Pressure',
-          'Charging Aura',
-          'Psi Ray',
-          'Blink Strike',
-          'Blast',
-          'Rite of Strength',
-          'Self-Recharge',
-          'Group Elemental Overload',
-          'Group Physical Enhancement',
-          'Chain Lightning',
-          'Kitty Punch',
-        ],
-        dino: [
-          'Healing Bullet',
-          'Flame Bullet',
-          'Whirlwind Slash',
-          'Lightning Pierce',
-          'Penetration Charge',
-          'Incendiary Bullet',
-          'Pulse Orb',
-          'Flame Jet',
-          'Speed Up',
-          'Burn Aura',
-          'Intimidation',
-          'Meteor',
-          'Pulse Ray',
-          'Frost Vortex',
-          'Corrosion Aura',
-          'Rain Arrow',
-          'BBQ',
-          'Flaming Flight',
-          'Animal Expert',
-          'Crude Oil Spill',
-        ],
-        snow: [
-          'Cryo Bullet',
-          'Self-Healing',
-          'Elemental Overload',
-          'Electrical Blast',
-          'Wild Shot',
-          'Healing Link',
-          'Cyclone',
-          'Mesh Traction',
-          'Flame Impact',
-          'Emergency Shield',
-          'Ice Crystal Ambush',
-          'Frost Satellite',
-          'Ice Crystal Barrage',
-          'Beaver Combo',
-          'Shadow Strike',
-          'Outer God’s Tentacle',
-          'Blade Declaration',
-          'Super Flammable',
-          'Blackhole Jet',
-          'Agni’s Emissary',
-          'Arrow Storm',
-        ],
-        wish: [
-          'Lightning',
-          'Rapid Fire',
-          'Weakspot Sniper',
-          'Resist Death',
-          'Healing Aura',
-          'Deviant Energy Conduit',
-          'Dodge',
-          'Provoke',
-          'Blink',
-          'Damage Link',
-          'Resonant Skybound',
-          'Space Twister',
-          'Fate Coin',
-          'Void Zone',
-          'Torpedo',
-          "Black Cat's Gaze",
-          'Sugarcoated Shell',
-          'Rainy Peril',
-          'Lucky Light',
-          'Whale Invasion',
-          'Upper World Protection',
-        ],
-      };
-
-      // All unique skills across all shops
-      const allSkills = [
-        ...new Set([...shops.cat, ...shops.dino, ...shops.snow, ...shops.wish]),
-      ];
-
-      // Add ALL skills from deviation compatibility (even unlisted ones)
-      const allDevSkills = new Set();
-      Object.values(deviations).forEach((devSkills) => {
-        devSkills.forEach((skill) => allDevSkills.add(skill));
-      });
-
-      // Combine and deduplicate
+      const database = window.DEVIATION_SKILL_DATABASE;
+      const deviations = database.deviations;
+      const shops = database.shops;
+      const allSkills = [...new Set(Object.values(shops).flat())];
       const fullSkillList = [
-        ...new Set([...allSkills, ...Array.from(allDevSkills)]),
+        ...new Set([...allSkills, ...deviations.flatMap((deviation) => deviation.skills)]),
       ];
 
-      // Normalize skill name for matching
-      const normalize = (name) => name.trim();
+      const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const fuzzy = (value) => value.toLowerCase().trim();
+      const hasText = (value, term) => fuzzy(value).includes(fuzzy(term));
 
-      // Build header row
-      const thead = document.querySelector('thead tr');
-      fullSkillList.forEach((skill, index) => {
-        const th = document.createElement('th');
-        th.className = 'skill-header';
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
 
-        // Determine which shops this skill belongs to
-        let shopClasses = [];
-        if (shops.cat.includes(skill)) shopClasses.push('cat-skill');
-        if (shops.dino.includes(skill)) shopClasses.push('dino-skill');
-        if (shops.snow.includes(skill)) shopClasses.push('snow-skill');
-        if (shops.wish.includes(skill)) shopClasses.push('wish-skill');
+      function getShopClasses(skill) {
+        const classes = [];
+        if (shops.cat.includes(skill)) classes.push('cat-skill');
+        if (shops.dino.includes(skill)) classes.push('dino-skill');
+        if (shops.snow.includes(skill)) classes.push('snow-skill');
+        if (shops.wish.includes(skill)) classes.push('wish-skill');
+        return classes;
+      }
 
-        if (shopClasses.length > 1) {
-          th.classList.add('multi-skill');
-        } else if (shopClasses.length === 1) {
-          th.classList.add(...shopClasses);
+      function applyShopClass(element, skill) {
+        const classes = getShopClasses(skill);
+        if (classes.length > 1) {
+          element.classList.add('multi-skill');
+        } else if (classes.length === 1) {
+          element.classList.add(classes[0]);
         } else {
-          // Unlisted skill → dark background
-          th.classList.add('unlisted-skill');
+          element.classList.add('unlisted-skill');
         }
+      }
 
-        // Add click handler to highlight entire column
-        th.addEventListener('click', function () {
-          // Clear previous highlights
-          clearAllHighlights();
+      function initTabs() {
+        document.querySelectorAll('.tab-button').forEach((button) => {
+          button.addEventListener('click', () => {
+            document.querySelectorAll('.tab-button').forEach((item) => item.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
+            button.classList.add('active');
+            document.getElementById(button.dataset.tab).classList.add('active');
+          });
+        });
+      }
 
-          // Highlight this entire column with pink (50% transparent)
-          const allCellsInColumn = document.querySelectorAll(
-            `tbody tr td:nth-child(${index + 2})`
-          );
-          allCellsInColumn.forEach((cell) => {
-            cell.classList.add('skill-highlight');
+      function buildMatrix() {
+        const table = document.getElementById('skillMatrix');
+        const theadRow = table.querySelector('thead tr');
+        const tbody = table.querySelector('tbody');
 
-            // If this cell has a check mark, also highlight the entire row
-            if (cell.querySelector('.circle')) {
-              const row = cell.parentElement;
-              row.classList.add('deviation-highlight');
+        fullSkillList.forEach((skill, index) => {
+          const th = document.createElement('th');
+          th.className = 'skill-header';
+          applyShopClass(th, skill);
+          th.innerHTML = `<div class="rotated">${escapeHtml(skill)}</div>`;
+          th.addEventListener('click', () => highlightSkillColumn(index, th));
+          theadRow.appendChild(th);
+        });
+
+        deviations.forEach((deviation) => {
+          const row = document.createElement('tr');
+          const devCell = document.createElement('td');
+          devCell.className = 'deviation';
+          devCell.innerHTML = `
+            <div class="matrix-dev-cell">
+              <img src="${escapeHtml(deviation.image)}" alt="" loading="lazy" />
+              <span>${escapeHtml(deviation.name)}</span>
+            </div>`;
+          devCell.addEventListener('click', () => highlightDeviation(row, deviation));
+          row.appendChild(devCell);
+
+          const skillSet = new Set(deviation.skills.map(normalize));
+          fullSkillList.forEach((skill) => {
+            const cell = document.createElement('td');
+            if (skillSet.has(normalize(skill))) {
+              cell.classList.add('check');
+              cell.innerHTML = '<div class="circle"></div>';
             }
+            row.appendChild(cell);
           });
 
-          // Also highlight the header
-          th.classList.add('skill-highlight');
-
-          console.log(`Clicked Skill: ${skill}`);
+          tbody.appendChild(row);
         });
+      }
 
-        th.innerHTML = `<div class="rotated">${skill}</div>`;
-        thead.appendChild(th);
-      });
-
-      // Build rows
-      const tbody = document.querySelector('tbody');
-      Object.entries(deviations).forEach(([deviation, devSkills], rowIndex) => {
-        const row = document.createElement('tr');
-        const devCell = document.createElement('td');
-        devCell.className = 'deviation';
-        devCell.textContent = deviation;
-
-        // Add click handler to highlight entire row + compatible skill columns
-        devCell.addEventListener('click', function () {
-          // Clear previous highlights
-          clearAllHighlights();
-
-          // Highlight this entire row with purple (50% transparent)
-          row.classList.add('deviation-highlight');
-
-          // Highlight all compatible skill columns vertically
-          fullSkillList.forEach((skill, colIndex) => {
-            const normSkill = normalize(skill);
-            const normDevSkills = devSkills.map((s) => normalize(s));
-            if (normDevSkills.includes(normSkill)) {
-              const th = thead.children[0].children[colIndex + 1]; // +1 because first is deviation header
-              if (th) {
-                th.classList.add('skill-highlight');
-              }
-
-              // Highlight the entire column
-              const allCellsInColumn = document.querySelectorAll(
-                `tbody tr td:nth-child(${colIndex + 2})`
-              );
-              allCellsInColumn.forEach((cell) => {
-                cell.classList.add('skill-highlight');
-              });
-            }
-          });
-
-          console.log(`Clicked Deviation: ${deviation}`);
-        });
-
-        row.appendChild(devCell);
-
-        fullSkillList.forEach((skill) => {
-          const cell = document.createElement('td');
-          const normSkill = normalize(skill);
-          const normDevSkills = devSkills.map((s) => normalize(s));
-          if (normDevSkills.includes(normSkill)) {
-            cell.classList.add('check');
-            cell.innerHTML = '<div class="circle"></div>';
-          }
-          row.appendChild(cell);
-        });
-        tbody.appendChild(row);
-      });
-
-      // Helper function to clear all highlights
       function clearAllHighlights() {
-        // Clear all highlights
-        document.querySelectorAll('tbody tr').forEach((row) => {
+        document.querySelectorAll('#skillMatrix tbody tr').forEach((row) => {
           row.classList.remove('deviation-highlight');
         });
-
-        document.querySelectorAll('tbody td').forEach((cell) => {
-          cell.classList.remove('skill-highlight');
-          cell.classList.remove('deviation-highlight');
-          cell.classList.remove('overlap-highlight');
+        document.querySelectorAll('#skillMatrix tbody td').forEach((cell) => {
+          cell.classList.remove('skill-highlight', 'deviation-highlight');
         });
-
-        document.querySelectorAll('thead th.skill-header').forEach((th) => {
+        document.querySelectorAll('#skillMatrix thead th.skill-header').forEach((th) => {
           th.classList.remove('skill-highlight');
         });
       }
 
-      // Search functionality
-      const searchBox = document.getElementById('searchBox');
-
-      function updateSearch() {
-        const searchTerm = searchBox.value.toLowerCase().trim();
-
-        const thList = Array.from(
-          document.querySelectorAll('thead th.skill-header')
-        );
-        const thSkillNames = thList.map((th) =>
-          th.querySelector('.rotated').textContent.toLowerCase()
-        );
-
-        // Helper to toggle visibility classes
-        const setVisible = (el, visible) => {
-          if (visible) {
-            el.classList.remove('search-hidden');
-            el.classList.add('search-visible');
-          } else {
-            el.classList.remove('search-visible');
-            el.classList.add('search-hidden');
+      function highlightSkillColumn(index, header) {
+        clearAllHighlights();
+        document.querySelectorAll(`#skillMatrix tbody tr td:nth-child(${index + 2})`).forEach((cell) => {
+          cell.classList.add('skill-highlight');
+          if (cell.querySelector('.circle')) {
+            cell.parentElement.classList.add('deviation-highlight');
           }
+        });
+        header.classList.add('skill-highlight');
+      }
+
+      function highlightDeviation(row, deviation) {
+        clearAllHighlights();
+        row.classList.add('deviation-highlight');
+        const theadRow = document.querySelector('#skillMatrix thead tr');
+        const deviationSkillSet = new Set(deviation.skills.map(normalize));
+        fullSkillList.forEach((skill, index) => {
+          if (!deviationSkillSet.has(normalize(skill))) return;
+          const header = theadRow.children[index + 1];
+          if (header) header.classList.add('skill-highlight');
+          document.querySelectorAll(`#skillMatrix tbody tr td:nth-child(${index + 2})`).forEach((cell) => {
+            cell.classList.add('skill-highlight');
+          });
+        });
+      }
+
+      function initMatrixSearch() {
+        const searchBox = document.getElementById('matrixSearchBox');
+        const thList = Array.from(document.querySelectorAll('#skillMatrix thead th.skill-header'));
+        const thSkillNames = thList.map((th) => th.querySelector('.rotated').textContent.toLowerCase());
+
+        const setVisible = (element, visible) => {
+          element.classList.toggle('search-visible', visible);
+          element.classList.toggle('search-hidden', !visible);
         };
 
+        function updateSearch() {
+          const searchTerm = searchBox.value.toLowerCase().trim();
+          if (!searchTerm) {
+            document.querySelectorAll('#skillMatrix tbody tr').forEach((row) => setVisible(row, true));
+            thList.forEach((th) => setVisible(th, true));
+            return;
+          }
+
+          const skillMatches = new Set(thSkillNames.filter((name) => name.includes(searchTerm)));
+          const isSkillQuery = skillMatches.size > 0;
+
+          document.querySelectorAll('#skillMatrix tbody tr').forEach((row) => {
+            const deviationName = row.querySelector('td.deviation').textContent.toLowerCase();
+            const rowSkills = Array.from(row.querySelectorAll('td .circle')).map((circle) => {
+              const colIndex = circle.closest('td').cellIndex;
+              return document
+                .querySelector(`#skillMatrix thead th:nth-child(${colIndex + 1}) .rotated`)
+                .textContent.toLowerCase();
+            });
+
+            const matchesDeviation = deviationName.includes(searchTerm);
+            const matchesSkillLoose = rowSkills.some((skill) => skill.includes(searchTerm));
+            const matchesSkillDirect = rowSkills.some((skill) => skillMatches.has(skill));
+            setVisible(row, isSkillQuery ? matchesSkillDirect || matchesDeviation : matchesDeviation || matchesSkillLoose);
+          });
+
+          const visibleSkillSet = new Set();
+          document.querySelectorAll('#skillMatrix tbody tr.search-visible').forEach((row) => {
+            Array.from(row.querySelectorAll('td .circle')).forEach((circle) => {
+              const colIndex = circle.closest('td').cellIndex;
+              visibleSkillSet.add(
+                document.querySelector(`#skillMatrix thead th:nth-child(${colIndex + 1}) .rotated`).textContent.toLowerCase()
+              );
+            });
+          });
+
+          thList.forEach((th, index) => {
+            const name = thSkillNames[index];
+            setVisible(th, isSkillQuery ? skillMatches.has(name) : visibleSkillSet.has(name));
+          });
+        }
+
+        let searchTimeout;
+        searchBox.addEventListener('input', () => {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(updateSearch, 120);
+        });
+      }
+
+      function initResultSearch() {
+        const searchBox = document.getElementById('resultSearchBox');
+        const suggestions = document.getElementById('searchSuggestions');
+        const inputs = document.querySelectorAll('input[name="searchMode"], input[name="layoutMode"]');
+
+        suggestions.innerHTML = [...deviations.map((item) => item.name), ...fullSkillList]
+          .sort((a, b) => a.localeCompare(b))
+          .map((value) => `<option value="${escapeHtml(value)}"></option>`)
+          .join('');
+
+        inputs.forEach((input) => input.addEventListener('change', renderResults));
+        searchBox.addEventListener('input', renderResults);
+        renderResults();
+      }
+
+      function getCommonSkills(results) {
+        if (results.length === 0) return new Set();
+        const [first, ...rest] = results.map((deviation) => new Set(deviation.skills.map(normalize)));
+        for (const skill of [...first]) {
+          if (!rest.every((set) => set.has(skill))) first.delete(skill);
+        }
+        return first;
+      }
+
+      function getSearchedSkillSet(term) {
+        if (!term) return new Set();
+        return new Set(fullSkillList.filter((skill) => hasText(skill, term)).map(normalize));
+      }
+
+      function renderResults() {
+        const searchTerm = document.getElementById('resultSearchBox').value.trim();
+        const mode = document.querySelector('input[name="searchMode"]:checked').value;
+        const layout = document.querySelector('input[name="layoutMode"]:checked').value;
+        const resultsElement = document.getElementById('results');
+        const countElement = document.getElementById('resultCount');
+
+        resultsElement.className = `results-grid ${layout}`;
+
         if (!searchTerm) {
-          // Reset: show all rows and all skill columns
-          document
-            .querySelectorAll('tbody tr')
-            .forEach((row) => setVisible(row, true));
-          thList.forEach((th) => setVisible(th, true));
+          countElement.textContent = 'Enter a search term.';
+          resultsElement.innerHTML = '<div class="empty-state">Search a deviation to see its skills, or search a skill to see every compatible deviation.</div>';
           return;
         }
 
-        // 1) Establish whether this is a skill-centric query (at least one header matches)
-        const skillNameDirectMatches = new Set(
-          thSkillNames.filter((n) => n.includes(searchTerm))
-        );
-        const isSkillQuery = skillNameDirectMatches.size > 0;
-
-        // 2) Filter rows (deviations)
-        document.querySelectorAll('tbody tr').forEach((row) => {
-          const deviationCell = row.querySelector('td.deviation');
-          const deviationName = deviationCell.textContent.toLowerCase();
-
-          // Get all skills this deviation has
-          const rowSkills = Array.from(row.querySelectorAll('td .circle')).map(
-            (circle) => {
-              const colIndex = circle.closest('td').cellIndex;
-              return thead
-                .querySelector(`th:nth-child(${colIndex + 1}) .rotated`)
-                .textContent.toLowerCase();
-            }
-          );
-
-          const matchesDeviation = deviationName.includes(searchTerm);
-          const matchesSkillLoose = rowSkills.some((s) =>
-            s.includes(searchTerm)
-          );
-          const matchesSkillDirect = rowSkills.some((s) =>
-            skillNameDirectMatches.has(s)
-          );
-
-          // If searching a skill, narrow rows to only those that have the matched skill(s)
-          if (isSkillQuery) {
-            setVisible(row, matchesSkillDirect || matchesDeviation);
-          } else {
-            // Deviation-first behavior: show rows if deviation name or any skill loosely matches
-            setVisible(row, matchesDeviation || matchesSkillLoose);
+        const matched = deviations.filter((deviation) => {
+          if (mode === 'deviation') {
+            return hasText(deviation.name, searchTerm);
           }
+          return deviation.skills.some((skill) => hasText(skill, searchTerm));
         });
 
-        // 3) Decide which skill headers to keep based on the search term and visible rows
-        // Skills used by currently visible rows
-        const visibleSkillSet = new Set();
-        document.querySelectorAll('tbody tr.search-visible').forEach((row) => {
-          Array.from(row.querySelectorAll('td .circle')).forEach((circle) => {
-            const colIndex = circle.closest('td').cellIndex; // 0-based for TD
-            const skillName = thead
-              .querySelector(`th:nth-child(${colIndex + 1}) .rotated`)
-              .textContent.toLowerCase();
-            visibleSkillSet.add(skillName);
-          });
-        });
+        const commonSkills = getCommonSkills(matched);
+        const searchedSkills = mode === 'skill' ? getSearchedSkillSet(searchTerm) : new Set();
 
-        if (isSkillQuery) {
-          // Skill-centric: keep only the directly matched skill columns
-          thList.forEach((th, i) => {
-            const name = thSkillNames[i];
-            setVisible(th, skillNameDirectMatches.has(name));
-          });
-        } else {
-          // Deviation-centric: keep the skills used by the visible rows (narrow to what's relevant)
-          thList.forEach((th, i) => {
-            const name = thSkillNames[i];
-            setVisible(th, visibleSkillSet.has(name));
-          });
+        countElement.textContent = `${matched.length} result${matched.length === 1 ? '' : 's'} for ${mode}: “${searchTerm}”`;
+
+        if (matched.length === 0) {
+          resultsElement.innerHTML = '<div class="empty-state">No matching deviations. Either it does not exist here yet, or the spelling is being very Once Human about it.</div>';
+          return;
         }
+
+        resultsElement.innerHTML = matched
+          .map((deviation) => renderResultCard(deviation, commonSkills, searchedSkills))
+          .join('');
       }
 
-      // Add search event listener with debouncing
-      let searchTimeout;
-      searchBox.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(updateSearch, 150); // Debounce for smooth typing
-      });
+      function renderResultCard(deviation, commonSkills, searchedSkills) {
+        const skillItems = deviation.skills
+          .map((skill) => {
+            const normalized = normalize(skill);
+            const isSearched = searchedSkills.has(normalized);
+            const isCommon = commonSkills.has(normalized);
+            const classes = ['skill-chip'];
+            if (isCommon) classes.push('common');
+            if (isSearched) classes.push('searched');
+            return `<span class="${classes.join(' ')}">${escapeHtml(skill)}</span>`;
+          })
+          .join('');
+
+        return `
+          <article class="result-card">
+            <div class="result-header">
+              <img src="${escapeHtml(deviation.image)}" alt="${escapeHtml(deviation.name)}" loading="lazy" />
+              <h2>${escapeHtml(deviation.name)}</h2>
+            </div>
+            <div class="skill-list">${skillItems}</div>
+          </article>`;
+      }
+
+      initTabs();
+      buildMatrix();
+      initMatrixSearch();
+      initResultSearch();
     </script>
   </body>
 </html>
