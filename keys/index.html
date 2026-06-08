@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Mutagen Edit Keys</title>
+  <style>
+    body { margin: 0; background: #252525; color: #e8e8e8; font-family: Arial, sans-serif; }
+    main { width: min(900px, calc(100vw - 32px)); margin: 0 auto; padding: 28px 0; }
+    input, button { padding: 10px 12px; border-radius: 8px; border: 1px solid #555; background: #333; color: #eee; }
+    button { cursor: pointer; font-weight: 700; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #555; padding: 8px; text-align: left; }
+    .status { margin: 12px 0; color: #b8b8b8; }
+    .new-key { background: rgba(255, 176, 0, .16); border: 1px solid #ffb000; padding: 12px; border-radius: 10px; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Skill Mutagen Edit Keys</h1>
+    <p>Generate and revoke database edit keys. Generated keys are shown once. Store them somewhere less cursed than a Discord screenshot.</p>
+    <div class="row">
+      <input id="adminKey" type="password" placeholder="Admin key" />
+      <button id="loadButton">Load keys</button>
+    </div>
+    <div class="row">
+      <input id="label" type="text" placeholder="Key label" />
+      <button id="generateButton">Generate edit key</button>
+    </div>
+    <div id="newKey" class="new-key" hidden></div>
+    <div id="status" class="status">Enter admin key to manage editor keys.</div>
+    <table>
+      <thead><tr><th>Label</th><th>Created</th><th>Last used</th><th>Uses</th><th></th></tr></thead>
+      <tbody id="keysBody"></tbody>
+    </table>
+  </main>
+<script>
+  const statusEl = document.getElementById('status');
+  const keysBody = document.getElementById('keysBody');
+  const newKeyEl = document.getElementById('newKey');
+  const adminInput = document.getElementById('adminKey');
+  adminInput.value = localStorage.getItem('skillMutagenAdminKey') || '';
+
+  function adminKey() {
+    const value = adminInput.value.trim();
+    if (value) localStorage.setItem('skillMutagenAdminKey', value);
+    return value;
+  }
+
+  async function api(method, body) {
+    const response = await fetch('/api/edit-keys', {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey() },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    return result;
+  }
+
+  async function loadKeys() {
+    try {
+      const result = await api('GET');
+      keysBody.innerHTML = result.keys.length ? result.keys.map(key => `
+        <tr>
+          <td>${escapeHtml(key.label || '')}</td>
+          <td>${escapeHtml(key.created_at || '')}</td>
+          <td>${escapeHtml(key.last_used_at || '')}</td>
+          <td>${key.use_count || 0}</td>
+          <td><button data-id="${escapeHtml(key.id)}">Revoke</button></td>
+        </tr>`).join('') : '<tr><td colspan="5">No keys yet.</td></tr>';
+      statusEl.textContent = `Loaded ${result.keys.length} key(s).`;
+    } catch (error) {
+      statusEl.textContent = `Load failed: ${error.message}`;
+    }
+  }
+
+  async function generateKey() {
+    try {
+      const result = await api('POST', { action: 'generate', label: document.getElementById('label').value });
+      newKeyEl.hidden = false;
+      newKeyEl.innerHTML = `<strong>New edit key:</strong> <code>${escapeHtml(result.key)}</code><br />Copy it now. It will not be shown again.`;
+      await loadKeys();
+    } catch (error) {
+      statusEl.textContent = `Generate failed: ${error.message}`;
+    }
+  }
+
+  keysBody.addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-id]');
+    if (!button || !confirm('Revoke this edit key?')) return;
+    try {
+      await api('DELETE', { id: button.dataset.id });
+      await loadKeys();
+    } catch (error) {
+      statusEl.textContent = `Revoke failed: ${error.message}`;
+    }
+  });
+
+  function escapeHtml(value) {
+    return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  document.getElementById('loadButton').addEventListener('click', loadKeys);
+  document.getElementById('generateButton').addEventListener('click', generateKey);
+</script>
+</body>
+</html>

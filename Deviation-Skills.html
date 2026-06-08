@@ -438,8 +438,123 @@
         color: var(--muted);
       }
 
+
+      .editor-grid {
+        display: grid;
+        grid-template-columns: minmax(260px, 360px) 1fr;
+        gap: 16px;
+      }
+
+      .editor-sidebar,
+      .editor-main {
+        border: 1px solid #454545;
+        border-radius: 12px;
+        background: #2b2b2b;
+        padding: 14px;
+      }
+
+      .editor-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+
+      .control-button {
+        padding: 9px 12px;
+        font-weight: 700;
+      }
+
+      .danger-button {
+        border-color: #a44;
+        background: rgba(170, 68, 68, 0.18);
+      }
+
+      .editor-status {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        min-height: 18px;
+      }
+
+      .editor-status.ok {
+        color: #9ddf9d;
+      }
+
+      .editor-status.error {
+        color: #ff9b9b;
+      }
+
+      .editor-main h2,
+      .editor-sidebar h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .editor-select,
+      .editor-input {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #3a3a3a;
+        color: var(--text);
+        font-family: inherit;
+      }
+
+      .editor-field {
+        margin-bottom: 12px;
+      }
+
+      .editor-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .skill-checks {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 8px;
+        max-height: 420px;
+        overflow: auto;
+        padding: 8px;
+        border: 1px solid #444;
+        border-radius: 10px;
+        background: #252525;
+      }
+
+      .skill-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 8px;
+        border-radius: 8px;
+        background: #303030;
+        font-size: 13px;
+      }
+
+      .shop-checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .shop-checks label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text);
+        font-size: 13px;
+        text-transform: none;
+      }
+
       @media (max-width: 860px) {
-        .search-tools {
+        .search-tools,
+        .editor-grid {
           grid-template-columns: 1fr;
         }
 
@@ -457,6 +572,7 @@
       <nav class="tabs" aria-label="Views">
         <button class="tab-button active" type="button" data-tab="matrix-panel">Current Table</button>
         <button class="tab-button" type="button" data-tab="search-panel">Deviation / Skill Search</button>
+        <button class="tab-button" type="button" data-tab="editor-panel">Database Editor</button>
       </nav>
 
       <section id="matrix-panel" class="tab-panel active">
@@ -531,19 +647,92 @@
           <div id="results" class="results-grid vertical"></div>
         </div>
       </section>
+
+      <section id="editor-panel" class="tab-panel">
+        <div class="panel-card">
+          <div class="result-meta">
+            <div id="databaseStatus">Database source: loading...</div>
+            <div class="editor-actions">
+              <button class="control-button" type="button" id="unlockEditorButton">Unlock editor</button>
+              <button class="control-button" type="button" id="reloadDatabaseButton">Reload DB</button>
+              <button class="control-button" type="button" id="saveDatabaseButton">Save DB</button>
+            </div>
+          </div>
+
+          <div class="editor-grid">
+            <aside class="editor-sidebar">
+              <h2>Deviation</h2>
+              <div class="editor-field">
+                <label for="editorDeviationSelect">Select deviation</label>
+                <select id="editorDeviationSelect" class="editor-select"></select>
+              </div>
+              <div class="editor-field">
+                <label for="editorDeviationName">Name</label>
+                <input id="editorDeviationName" class="editor-input" type="text" />
+              </div>
+              <div class="editor-field">
+                <label for="editorDeviationImage">Image URL</label>
+                <input id="editorDeviationImage" class="editor-input" type="url" />
+              </div>
+              <div class="editor-actions">
+                <button class="control-button" type="button" id="addDeviationButton">Add deviation</button>
+                <button class="control-button" type="button" id="updateDeviationButton">Update deviation</button>
+                <button class="control-button danger-button" type="button" id="removeDeviationButton">Remove deviation</button>
+              </div>
+              <div id="editorStatus" class="editor-status"></div>
+            </aside>
+
+            <section class="editor-main">
+              <h2>Skills & Associations</h2>
+              <div class="editor-field">
+                <label for="newSkillName">Add skill and associate with selected deviation</label>
+                <input id="newSkillName" class="editor-input" type="text" placeholder="New skill name" />
+              </div>
+              <div class="editor-field">
+                <label>Shop/source for new or selected skill</label>
+                <div class="shop-checks">
+                  <label><input type="checkbox" value="cat" class="shop-checkbox" /> Cat</label>
+                  <label><input type="checkbox" value="dino" class="shop-checkbox" /> Dino</label>
+                  <label><input type="checkbox" value="snow" class="shop-checkbox" /> Snow</label>
+                  <label><input type="checkbox" value="wish" class="shop-checkbox" /> Wish</label>
+                </div>
+              </div>
+              <div class="editor-actions">
+                <button class="control-button" type="button" id="addSkillButton">Add skill to deviation</button>
+                <button class="control-button danger-button" type="button" id="removeSkillButton">Remove selected skill globally</button>
+              </div>
+              <div class="editor-field">
+                <label>Correct skill associations for selected deviation</label>
+                <div id="skillAssociationList" class="skill-checks"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
     </main>
 
     <script src="data/deviation-database.js"></script>
     <script>
       'use strict';
 
-      const database = window.DEVIATION_SKILL_DATABASE;
-      const deviations = database.deviations;
-      const shops = database.shops;
-      const allSkills = [...new Set(Object.values(shops).flat())];
-      const fullSkillList = [
-        ...new Set([...allSkills, ...deviations.flatMap((deviation) => deviation.skills)]),
-      ];
+      const staticDatabase = window.DEVIATION_SKILL_DATABASE;
+      let database = typeof structuredClone === 'function' ? structuredClone(staticDatabase) : JSON.parse(JSON.stringify(staticDatabase));
+      let deviations = database.deviations;
+      let shops = database.shops;
+      let allSkills = [];
+      let fullSkillList = [];
+      let editKey = localStorage.getItem('skillMutagenEditKey') || '';
+      let selectedGlobalSkill = '';
+
+      function rebuildIndexes() {
+        deviations = database.deviations;
+        shops = database.shops;
+        allSkills = [...new Set(Object.values(shops).flat())];
+        fullSkillList = [...new Set([...allSkills, ...deviations.flatMap((deviation) => deviation.skills)])]
+          .sort((a, b) => a.localeCompare(b));
+      }
+
+      rebuildIndexes();
 
       const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '');
       const fuzzy = (value) => value.toLowerCase().trim();
@@ -593,6 +782,8 @@
         const table = document.getElementById('skillMatrix');
         const theadRow = table.querySelector('thead tr');
         const tbody = table.querySelector('tbody');
+        while (theadRow.children.length > 1) theadRow.removeChild(theadRow.lastElementChild);
+        tbody.innerHTML = '';
 
         fullSkillList.forEach((skill, index) => {
           const th = document.createElement('th');
@@ -669,8 +860,6 @@
 
       function initMatrixSearch() {
         const searchBox = document.getElementById('matrixSearchBox');
-        const thList = Array.from(document.querySelectorAll('#skillMatrix thead th.skill-header'));
-        const thSkillNames = thList.map((th) => th.querySelector('.rotated').textContent.toLowerCase());
 
         const setVisible = (element, visible) => {
           element.classList.toggle('search-visible', visible);
@@ -678,6 +867,8 @@
         };
 
         function updateSearch() {
+          const thList = Array.from(document.querySelectorAll('#skillMatrix thead th.skill-header'));
+          const thSkillNames = thList.map((th) => th.querySelector('.rotated').textContent.toLowerCase());
           const searchTerm = searchBox.value.toLowerCase().trim();
           if (!searchTerm) {
             document.querySelectorAll('#skillMatrix tbody tr').forEach((row) => setVisible(row, true));
@@ -724,6 +915,31 @@
           clearTimeout(searchTimeout);
           searchTimeout = setTimeout(updateSearch, 120);
         });
+      }
+
+      async function loadHostedDatabase() {
+        const status = document.getElementById('databaseStatus');
+        try {
+          const response = await fetch('/api/database', { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const payload = await response.json();
+          if (payload.database) {
+            database = payload.database;
+            rebuildIndexes();
+            status.textContent = `Database source: Cloudflare D1${payload.updated_at ? ` (updated ${payload.updated_at})` : ''}`;
+            return;
+          }
+          status.textContent = 'Database source: local static fallback (Cloudflare DB is empty)';
+        } catch (error) {
+          status.textContent = `Database source: local static fallback (${error.message})`;
+        }
+      }
+
+      function refreshRenderedData() {
+        rebuildIndexes();
+        buildMatrix();
+        renderResults();
+        populateEditor();
       }
 
       function initResultSearch() {
@@ -815,10 +1031,193 @@
           </article>`;
       }
 
-      initTabs();
-      buildMatrix();
-      initMatrixSearch();
-      initResultSearch();
+      function setEditorStatus(message, type = '') {
+        const status = document.getElementById('editorStatus');
+        status.textContent = message;
+        status.className = `editor-status ${type}`.trim();
+      }
+
+      function getDeviationByName(name) {
+        return deviations.find((deviation) => deviation.name === name) || null;
+      }
+
+      function populateEditor() {
+        const select = document.getElementById('editorDeviationSelect');
+        const current = select.value || deviations[0]?.name || '';
+        select.innerHTML = deviations
+          .map((deviation) => `<option value="${escapeHtml(deviation.name)}">${escapeHtml(deviation.name)}</option>`)
+          .join('');
+        select.value = deviations.some((deviation) => deviation.name === current) ? current : deviations[0]?.name || '';
+        renderSelectedDeviationEditor();
+        renderSkillAssociations();
+      }
+
+      function renderSelectedDeviationEditor() {
+        const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
+        document.getElementById('editorDeviationName').value = deviation?.name || '';
+        document.getElementById('editorDeviationImage').value = deviation?.image || '';
+      }
+
+      function renderSkillAssociations() {
+        const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
+        const assigned = new Set((deviation?.skills || []).map(normalize));
+        const container = document.getElementById('skillAssociationList');
+        container.innerHTML = fullSkillList.map((skill) => {
+          const checked = assigned.has(normalize(skill)) ? 'checked' : '';
+          return `<label class="skill-check"><input type="checkbox" class="association-checkbox" value="${escapeHtml(skill)}" ${checked} /> <span>${escapeHtml(skill)}</span></label>`;
+        }).join('');
+      }
+
+      function updateSelectedAssociations() {
+        const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
+        if (!deviation) return;
+        deviation.skills = [...document.querySelectorAll('.association-checkbox:checked')]
+          .map((checkbox) => checkbox.value)
+          .sort((a, b) => a.localeCompare(b));
+        renderResults();
+      }
+
+      function selectedShops() {
+        return [...document.querySelectorAll('.shop-checkbox:checked')].map((checkbox) => checkbox.value);
+      }
+
+      function addSkillToDeviation() {
+        const name = document.getElementById('newSkillName').value.trim();
+        const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
+        if (!name || !deviation) return setEditorStatus('Pick a deviation and enter a skill name.', 'error');
+
+        if (!deviation.skills.some((skill) => normalize(skill) === normalize(name))) deviation.skills.push(name);
+        for (const shop of selectedShops()) {
+          if (!shops[shop].some((skill) => normalize(skill) === normalize(name))) shops[shop].push(name);
+          shops[shop].sort((a, b) => a.localeCompare(b));
+        }
+        document.getElementById('newSkillName').value = '';
+        refreshRenderedData();
+        setEditorStatus(`Added/associated ${name} with ${deviation.name}. Save DB when done.`, 'ok');
+      }
+
+      function removeSelectedSkillGlobally() {
+        const checked = document.querySelector('.association-checkbox:checked');
+        const skillName = checked?.value || selectedGlobalSkill;
+        if (!skillName) return setEditorStatus('Select a skill checkbox first.', 'error');
+        if (!confirm(`Remove ${skillName} from every deviation and shop list?`)) return;
+        for (const deviation of deviations) deviation.skills = deviation.skills.filter((skill) => normalize(skill) !== normalize(skillName));
+        for (const shop of Object.keys(shops)) shops[shop] = shops[shop].filter((skill) => normalize(skill) !== normalize(skillName));
+        refreshRenderedData();
+        setEditorStatus(`Removed ${skillName} globally. Save DB when done.`, 'ok');
+      }
+
+      function addDeviation() {
+        const name = document.getElementById('editorDeviationName').value.trim();
+        const image = document.getElementById('editorDeviationImage').value.trim();
+        if (!name) return setEditorStatus('Deviation name is required.', 'error');
+        if (deviations.some((deviation) => normalize(deviation.name) === normalize(name))) {
+          return setEditorStatus('That deviation already exists.', 'error');
+        }
+        deviations.push({ name, image, skills: [] });
+        deviations.sort((a, b) => a.name.localeCompare(b.name));
+        refreshRenderedData();
+        document.getElementById('editorDeviationSelect').value = name;
+        renderSelectedDeviationEditor();
+        renderSkillAssociations();
+        setEditorStatus(`Added ${name}. Save DB when done.`, 'ok');
+      }
+
+      function updateDeviation() {
+        const oldName = document.getElementById('editorDeviationSelect').value;
+        const deviation = getDeviationByName(oldName);
+        if (!deviation) return;
+        const newName = document.getElementById('editorDeviationName').value.trim();
+        if (!newName) return setEditorStatus('Deviation name is required.', 'error');
+        if (oldName !== newName && deviations.some((item) => normalize(item.name) === normalize(newName))) {
+          return setEditorStatus('Another deviation already uses that name.', 'error');
+        }
+        deviation.name = newName;
+        deviation.image = document.getElementById('editorDeviationImage').value.trim();
+        deviations.sort((a, b) => a.name.localeCompare(b.name));
+        refreshRenderedData();
+        document.getElementById('editorDeviationSelect').value = newName;
+        setEditorStatus(`Updated ${newName}. Save DB when done.`, 'ok');
+      }
+
+      function removeDeviation() {
+        const name = document.getElementById('editorDeviationSelect').value;
+        if (!name || !confirm(`Remove deviation ${name}?`)) return;
+        database.deviations = deviations.filter((deviation) => deviation.name !== name);
+        refreshRenderedData();
+        setEditorStatus(`Removed ${name}. Save DB when done.`, 'ok');
+      }
+
+      async function unlockEditor() {
+        const key = prompt('Enter edit key', editKey || '');
+        if (!key) return;
+        try {
+          const response = await fetch('/api/edit-keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'validate', key })
+          });
+          const result = await response.json();
+          if (!result.ok) return setEditorStatus('Invalid edit key.', 'error');
+          editKey = key;
+          localStorage.setItem('skillMutagenEditKey', key);
+          setEditorStatus('Editor unlocked.', 'ok');
+        } catch (error) {
+          setEditorStatus(`Could not validate key: ${error.message}`, 'error');
+        }
+      }
+
+      async function saveDatabase() {
+        updateSelectedAssociations();
+        if (!editKey) return setEditorStatus('Unlock the editor with an edit key first.', 'error');
+        try {
+          const response = await fetch('/api/database', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Edit-Key': editKey },
+            body: JSON.stringify({ database })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+          setEditorStatus(`Saved ${result.deviationCount} deviations and ${result.skillCount} skills.`, 'ok');
+          document.getElementById('databaseStatus').textContent = 'Database source: Cloudflare D1 (just saved)';
+        } catch (error) {
+          setEditorStatus(`Save failed: ${error.message}`, 'error');
+        }
+      }
+
+      function initEditor() {
+        document.getElementById('editorDeviationSelect').addEventListener('change', () => {
+          renderSelectedDeviationEditor();
+          renderSkillAssociations();
+        });
+        document.getElementById('skillAssociationList').addEventListener('change', updateSelectedAssociations);
+        document.getElementById('skillAssociationList').addEventListener('click', (event) => {
+          const checkbox = event.target.closest('.association-checkbox');
+          if (checkbox) selectedGlobalSkill = checkbox.value;
+        });
+        document.getElementById('addSkillButton').addEventListener('click', addSkillToDeviation);
+        document.getElementById('removeSkillButton').addEventListener('click', removeSelectedSkillGlobally);
+        document.getElementById('addDeviationButton').addEventListener('click', addDeviation);
+        document.getElementById('updateDeviationButton').addEventListener('click', updateDeviation);
+        document.getElementById('removeDeviationButton').addEventListener('click', removeDeviation);
+        document.getElementById('unlockEditorButton').addEventListener('click', unlockEditor);
+        document.getElementById('saveDatabaseButton').addEventListener('click', saveDatabase);
+        document.getElementById('reloadDatabaseButton').addEventListener('click', async () => {
+          await loadHostedDatabase();
+          refreshRenderedData();
+        });
+      }
+
+      async function initApp() {
+        initTabs();
+        await loadHostedDatabase();
+        buildMatrix();
+        initMatrixSearch();
+        initResultSearch();
+        initEditor();
+        populateEditor();
+      }
+      initApp();
     </script>
   </body>
 </html>

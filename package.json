@@ -1,0 +1,15 @@
+{
+  "name": "once-human-skill-mutagen",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check functions/api/database.js && node --check functions/api/edit-keys.js && node tools/check-inline-scripts.mjs",
+    "seed:local": "node tools/seed-cloudflare-d1.mjs --local",
+    "seed:remote": "node tools/seed-cloudflare-d1.mjs --remote",
+    "pages:dev": "wrangler pages dev . --d1 DB=oncehuman-skill-mutagen",
+    "pages:deploy": "wrangler pages deploy . --project-name once-human-skill-mutagen"
+  },
+  "devDependencies": {
+    "wrangler": "^4.98.0"
+  }
+}
