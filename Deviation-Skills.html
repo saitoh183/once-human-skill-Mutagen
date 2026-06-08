@@ -30,6 +30,10 @@
         --editor-panel-bg: #2b2b2b;
         --danger-border: #d46a6a;
         --danger-bg: rgba(212, 106, 106, 0.2);
+        --disabled-bg: #252525;
+        --disabled-text: #9d9d9d;
+        --disabled-border: #4a4a4a;
+        --disabled-opacity: 0.72;
         --ok: #a8f0a8;
         --error: #ffabab;
         --legend-border: rgba(255, 255, 255, 0.28);
@@ -80,6 +84,10 @@
         --editor-panel-bg: #fff7ea;
         --danger-border: #a53e3e;
         --danger-bg: #ffe1df;
+        --disabled-bg: #ebe1d0;
+        --disabled-text: #5f6b7a;
+        --disabled-border: #c2b49c;
+        --disabled-opacity: 0.8;
         --ok: #146c2e;
         --error: #9f1d1d;
         --legend-border: rgba(31, 41, 51, 0.35);
@@ -566,6 +574,28 @@
         font-weight: 700;
       }
 
+      .control-button:disabled,
+      .editor-input:disabled,
+      .editor-select:disabled,
+      .skill-check input:disabled,
+      .shop-checks input:disabled {
+        cursor: not-allowed;
+      }
+
+      .control-button:disabled,
+      .editor-input:disabled,
+      .editor-select:disabled {
+        border-color: var(--disabled-border);
+        background: var(--disabled-bg);
+        color: var(--disabled-text);
+        opacity: var(--disabled-opacity);
+      }
+
+      .skill-check:has(input:disabled),
+      .shop-checks label:has(input:disabled) {
+        opacity: var(--disabled-opacity);
+      }
+
       .danger-button {
         border-color: var(--danger-border);
         background: var(--danger-bg);
@@ -836,6 +866,7 @@
       let allSkills = [];
       let fullSkillList = [];
       let editKey = localStorage.getItem('skillMutagenEditKey') || '';
+      let editorLocked = true;
       let selectedGlobalSkill = '';
 
       function rebuildIndexes() {
@@ -1171,6 +1202,39 @@
         status.className = `editor-status ${type}`.trim();
       }
 
+      function setEditorLocked(locked, message = '') {
+        editorLocked = locked;
+        const unlockButton = document.getElementById('unlockEditorButton');
+        unlockButton.textContent = locked ? 'Unlock editor' : 'Lock editor';
+        unlockButton.setAttribute('aria-pressed', String(!locked));
+
+        const editableSelectors = [
+          '#editorDeviationName',
+          '#editorDeviationImage',
+          '#newSkillName',
+          '#addDeviationButton',
+          '#updateDeviationButton',
+          '#removeDeviationButton',
+          '#addSkillButton',
+          '#removeSkillButton',
+          '#saveDatabaseButton',
+          '.shop-checkbox',
+          '.association-checkbox'
+        ];
+
+        document.querySelectorAll(editableSelectors.join(',')).forEach((element) => {
+          element.disabled = locked;
+        });
+
+        if (message) setEditorStatus(message, locked ? '' : 'ok');
+      }
+
+      function requireUnlocked() {
+        if (!editorLocked) return true;
+        setEditorStatus('Editor is locked. Unlock it with an edit key first.', 'error');
+        return false;
+      }
+
       function getDeviationByName(name) {
         return deviations.find((deviation) => deviation.name === name) || null;
       }
@@ -1198,11 +1262,13 @@
         const container = document.getElementById('skillAssociationList');
         container.innerHTML = fullSkillList.map((skill) => {
           const checked = assigned.has(normalize(skill)) ? 'checked' : '';
-          return `<label class="skill-check"><input type="checkbox" class="association-checkbox" value="${escapeHtml(skill)}" ${checked} /> <span>${escapeHtml(skill)}</span></label>`;
+          const disabled = editorLocked ? 'disabled' : '';
+          return `<label class="skill-check"><input type="checkbox" class="association-checkbox" value="${escapeHtml(skill)}" ${checked} ${disabled} /> <span>${escapeHtml(skill)}</span></label>`;
         }).join('');
       }
 
       function updateSelectedAssociations() {
+        if (!requireUnlocked()) return;
         const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
         if (!deviation) return;
         deviation.skills = [...document.querySelectorAll('.association-checkbox:checked')]
@@ -1216,6 +1282,7 @@
       }
 
       function addSkillToDeviation() {
+        if (!requireUnlocked()) return;
         const name = document.getElementById('newSkillName').value.trim();
         const deviation = getDeviationByName(document.getElementById('editorDeviationSelect').value);
         if (!name || !deviation) return setEditorStatus('Pick a deviation and enter a skill name.', 'error');
@@ -1231,6 +1298,7 @@
       }
 
       function removeSelectedSkillGlobally() {
+        if (!requireUnlocked()) return;
         const checked = document.querySelector('.association-checkbox:checked');
         const skillName = checked?.value || selectedGlobalSkill;
         if (!skillName) return setEditorStatus('Select a skill checkbox first.', 'error');
@@ -1242,6 +1310,7 @@
       }
 
       function addDeviation() {
+        if (!requireUnlocked()) return;
         const name = document.getElementById('editorDeviationName').value.trim();
         const image = document.getElementById('editorDeviationImage').value.trim();
         if (!name) return setEditorStatus('Deviation name is required.', 'error');
@@ -1258,6 +1327,7 @@
       }
 
       function updateDeviation() {
+        if (!requireUnlocked()) return;
         const oldName = document.getElementById('editorDeviationSelect').value;
         const deviation = getDeviationByName(oldName);
         if (!deviation) return;
@@ -1275,6 +1345,7 @@
       }
 
       function removeDeviation() {
+        if (!requireUnlocked()) return;
         const name = document.getElementById('editorDeviationSelect').value;
         if (!name || !confirm(`Remove deviation ${name}?`)) return;
         database.deviations = deviations.filter((deviation) => deviation.name !== name);
@@ -1282,7 +1353,12 @@
         setEditorStatus(`Removed ${name}. Save DB when done.`, 'ok');
       }
 
-      async function unlockEditor() {
+      async function toggleEditorLock() {
+        if (!editorLocked) {
+          setEditorLocked(true, 'Editor locked.');
+          return;
+        }
+
         const key = prompt('Enter edit key', editKey || '');
         if (!key) return;
         try {
@@ -1295,13 +1371,14 @@
           if (!result.ok) return setEditorStatus('Invalid edit key.', 'error');
           editKey = key;
           localStorage.setItem('skillMutagenEditKey', key);
-          setEditorStatus('Editor unlocked.', 'ok');
+          setEditorLocked(false, 'Editor unlocked.');
         } catch (error) {
           setEditorStatus(`Could not validate key: ${error.message}`, 'error');
         }
       }
 
       async function saveDatabase() {
+        if (!requireUnlocked()) return;
         updateSelectedAssociations();
         if (!editKey) return setEditorStatus('Unlock the editor with an edit key first.', 'error');
         try {
@@ -1334,12 +1411,14 @@
         document.getElementById('addDeviationButton').addEventListener('click', addDeviation);
         document.getElementById('updateDeviationButton').addEventListener('click', updateDeviation);
         document.getElementById('removeDeviationButton').addEventListener('click', removeDeviation);
-        document.getElementById('unlockEditorButton').addEventListener('click', unlockEditor);
+        document.getElementById('unlockEditorButton').addEventListener('click', toggleEditorLock);
         document.getElementById('saveDatabaseButton').addEventListener('click', saveDatabase);
         document.getElementById('reloadDatabaseButton').addEventListener('click', async () => {
           await loadHostedDatabase();
           refreshRenderedData();
+          setEditorLocked(true, 'Database reloaded. Editor locked.');
         });
+        setEditorLocked(true, editKey ? 'Editor locked. Saved edit key available for unlock.' : 'Editor locked.');
       }
 
       async function initApp() {
